@@ -22,7 +22,7 @@
       <!-- 登录按钮 -->
       <div class="login-bg">
         <button class="login-btn"
-                @click="handleLogin"
+                @click="networkForLogin"
                 :disabled="isClick">登录</button>
       </div>
     </div>
@@ -30,11 +30,12 @@
 </template>
 
 <script>
-import bus from '../common/bus'
-import inputGroup from '../components/inputGroup'
-import { login, loginMsgCode } from '../api/directApi'
-import { getUserBaseInfo } from '../api/tokenApi'
-import { Toast } from 'mint-ui'
+import bus from '../common/bus';
+import inputGroup from '../components/inputGroup';
+import { Toast } from 'mint-ui';
+import { getCourseMsg } from '../api/courseApi';
+import { loginMsgCode } from '../api/userApi';
+import { mapState } from 'vuex';
 
 export default {
   name: 'loginPage',
@@ -49,36 +50,50 @@ export default {
       disabled: false, //是否可点击
       errors: {}, //验证提示信息
       todo: '',
-    }
+    };
   },
   created() {
     bus.$on('login', (msg) => {
-      console.log(msg, 'loginPage.vue')
+      console.log(msg, 'loginPage.vue');
       if (msg == 'success-todo') {
-        this.saveUserInfo();
+        this.networkForSaveUser();
       }
-    })
-    this.saveUserInfo();
+    });
+  },
+  computed: {
+    isClick() {
+      if (!this.phone || !this.verifyCode) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    ...mapState({
+      ttest: 'test',
+    }),
+  },
+  mounted() {
+    console.log(this.userInfo);
   },
   methods: {
     hide_view() {
-      bus.$emit('login', 'hide-view')
+      bus.$emit('login', 'hide-view');
     },
     getVerifyCode(event) {
       //获取验证码
       if (this.validatePhone()) {
-        this.validateBtn()
+        this.validateBtn();
         loginMsgCode({ mobile_tel: this.phone })
           .then((res) => {
             Toast({
               message: '验证码发送成功',
               position: 'bottom',
               duration: 2000,
-            })
+            });
           })
           .catch((rej) => {
-            console.log(rej)
-          })
+            console.log(rej);
+          });
       }
     },
     validatePhone() {
@@ -86,66 +101,56 @@ export default {
       if (!this.phone) {
         this.errors = {
           phone: '手机号码不能为空',
-        }
-        return false
+        };
+        return false;
       } else if (!/^1[345678]\d{9}$/.test(this.phone)) {
         this.errors = {
           phone: '请输入正确是手机号',
-        }
-        return false
+        };
+        return false;
       } else {
-        this.errors = {}
-        return true
+        this.errors = {};
+        return true;
       }
     },
     validateBtn() {
       //倒计时
-      let time = 60
+      let time = 60;
       let timer = setInterval(() => {
         if (time == 0) {
-          clearInterval(timer)
-          this.disabled = false
-          this.btnTitle = '获取验证码'
+          clearInterval(timer);
+          this.disabled = false;
+          this.btnTitle = '获取验证码';
         } else {
-          this.btnTitle = time + '秒后重试'
-          this.disabled = true
-          time--
+          this.btnTitle = time + '秒后重试';
+          this.disabled = true;
+          time--;
         }
-      }, 1000)
+      }, 1000);
     },
-    handleLogin() {
-      this.errors = {}
-      login({ userName: this.phone, code: this.verifyCode })
-        .then((res) => {
-          localStorage.setItem('access_token', res.result.access_token)
-          localStorage.setItem('refresh_token', res.result.refresh_token)
+    networkForLogin() {
+      this.$store
+        .dispatch('Login', { userName: this.phone, code: this.verifyCode })
+        .then((resolve) => {
           Toast({
             message: '登录成功',
             position: 'center',
             duration: 2000,
-          })
-          bus.$emit('login', 'success-todo')
+          });
+          bus.$emit('login', 'success-todo');
         })
-        .catch((rej) => {})
+        .catch((reject) => {});
     },
-    saveUserInfo() {
-      getUserBaseInfo()
-        .then((res) => {
-          localStorage.setItem('user', JSON.stringify(res.result.info))
+    networkForSaveUser() {
+      this.$store
+        .dispatch('AddUser')
+        .then((resolve) => {
+          console.log('SET_USER', resolve);
         })
-        .catch((rej) => {})
+        .catch((reject) => {});
     },
   },
-  computed: {
-    isClick() {
-      if (!this.phone || !this.verifyCode) {
-        return true
-      } else {
-        return false
-      }
-    },
-  },
-}
+};
 </script>
 <style lang="css" scoped>
 #login-view {

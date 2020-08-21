@@ -15,9 +15,9 @@ export default {
     },
   },
   mounted() {
-    console.log('liveIntroUrl: ', this.liveIntroUrl)
+    console.log('liveIntroUrl: ', this.liveIntroUrl);
   },
-}
+};
 </script>
 <style lang="css" scoped>
 #live-intro {

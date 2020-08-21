@@ -1,20 +1,22 @@
-import request from "./tokenRequest";
+import request from "./request";
 import QS from "qs";
 
-//测试课程信息
-export function getCourseInfo(params) {
+//登录
+export function login(params) {
   return request({
-    url: "/app/v1/user/course/room/message",
+    url: "/app/v1/login/userLoginCode",
     method: "post",
-    data: params
+    data: QS.stringify(params),
+    needToken: false
   });
 }
-//测试评论
-export function pushComment(params) {
+//发送登录验证码
+export function loginMsgCode(params) {
   return request({
-    url: "/app/v1/user/course/comment",
+    url: "/app/v1/login/code",
     method: "post",
-    data: params
+    data: QS.stringify(params),
+    needToken: false
   });
 }
 // 获取用户的基本信息
@@ -22,7 +24,7 @@ export function getUserBaseInfo() {
   return request({
     url: "/app/v1/user/center/base",
     method: "get",
-    ifToken: true
+    needToken: true
   });
   /*info:
 bind_ios: 0
@@ -44,12 +46,4 @@ user_sex: 1
 user_vocation: "销售"
 user_year: "1996-1-14"
 */
-}
-//登录后获取聊天室信息
-export function getChatRoomInfo(params) {
-  return request({
-    url: "/app/v2/course/chat/message",
-    method: "post",
-    data: params
-  });
 }

@@ -26,19 +26,19 @@ export default {
   data() {
     return {
       keysInfo: [],
-    }
+    };
   },
   created() {
-    for (var i in [1,2,3,4,5,6]) {
+    for (var i in [1, 2, 3, 4, 5, 6]) {
       let element = {
-          ctime: new Date().getTime() + '',
-          contentStr:
-            '龙头股通常在大盘下跌末期端，市场恐慌时，逆市涨停，提前见底，或者先于大盘启动，并且经受大盘一轮下跌考验。再如12月2日出现的新龙头太原刚玉，它符合刚讲的龙头战法。',
-        }
+        ctime: new Date().getTime() + '',
+        contentStr:
+          '龙头股通常在大盘下跌末期端，市场恐慌时，逆市涨停，提前见底，或者先于大盘启动，并且经受大盘一轮下跌考验。再如12月2日出现的新龙头太原刚玉，它符合刚讲的龙头战法。',
+      };
       this.keysInfo.push(element);
     }
-  }
-}
+  },
+};
 </script>
 <style lang="css" scoped>
 #live-keys {
@@ -87,8 +87,9 @@ export default {
   background: white;
   position: relative;
 }
-.content-bg::before, .content-bg::after {
-  content: "";
+.content-bg::before,
+.content-bg::after {
+  content: '';
   display: block;
   position: absolute;
   top: 8px;

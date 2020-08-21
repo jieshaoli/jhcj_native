@@ -9,12 +9,11 @@ export default {
   name: 'chatRoom',
   data() {
     return {
-      title: '文字直播课'
-    }
-  }
-}
+      title: '文字直播课',
+    };
+  },
+};
 </script>
 
 <style scoped>
-
 </style>

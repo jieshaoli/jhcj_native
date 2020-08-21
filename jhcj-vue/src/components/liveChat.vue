@@ -5,7 +5,7 @@
       <li v-for="(item, index) in chat_data"
           :key="index">
         <div class="cright cmsg"
-             v-if="item.user.user_id == self_info.user_id">
+             v-if="item.user.user_id == userInfo.user_id">
           <img class="headIcon radius"
                ondragstart="return false;"
                oncontextmenu="return false;"
@@ -42,9 +42,11 @@
   </div>
 </template>
 <script>
-import _setting from '../common/setting'
-import bus from '../common/bus'
-import { getChatRoomInfo } from '../api/tokenApi'
+import _setting from '../common/setting';
+import bus from '../common/bus';
+import { getChatRoomInfo } from '../api/courseApi';
+import { mapGetters } from 'vuex';
+import { Base64 } from 'js-base64';
 
 export default {
   name: 'liveChat',
@@ -55,124 +57,244 @@ export default {
   },
   data() {
     return {
-      self_info: {
-        user_id: -1,
-        user_name: '',
-        user_photo: '',
-        user_role: 2,
-      },
       input_placeholder: '输入内容...',
       chat_data: [],
-    }
+      chat_token: '',
+      chat_id: '',
+    };
   },
-  methods: {
-    checkUserInfo() {
-      debugger
-      if (this.self_info.user_id == -1) {
-        let access_token = localStorage.getItem('access_token')
-        if (
-          access_token &&
-          access_token.length != undefined &&
-          access_token != null
-        ) {
-          let user = JSON.parse(localStorage.getItem('user'))
-          if (user) {
-            this.self_info.user_id = user.id
-            this.self_info.user_name = user.user_nickname
-            this.self_info.user_photo = user.user_picture
-            this.self_info.user_role = 2
-          }
-        } else {
-          bus.$emit('login', 'show-view')
-        }
-      }
-    },
-    showEmoji() {
-      document.getElementById('input').focus()
-    },
-    sendMsg() {
-      let input = document.getElementById('input')
-      let currentTime = new Date().getTime()
-      let textContent = input.value
-      let infoC = {}
-      if (textContent.length > 0) {
-        infoC = { content: textContent }
-      }
-      let data = {
-        info_type: 1,
-        info: infoC,
-        info_time: currentTime + '',
-        user: this.self_info,
-      }
-      this.chat_data.push(data)
-      input.blur()
-      input.value = ''
-    },
-    updateScroll() {
-      let chat_box = document.getElementById('live-chat')
-      debugger
-      chat_box.scrollTop = chat_box.scrollHeight - 50
-      console.log(chat_box.scrollHeight, '-=-=-=', chat_box.scrollTop)
-    },
+  mounted() {},
+  updated() {
+    this.updateScroll();
+  },
+  computed: {
+    ...mapGetters({
+      userInfo: 'user',
+    }),
   },
   created() {
-    let access_token = localStorage.getItem('access_token')
-    for (var i in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
-      let left = {
-        info_type: 1,
-        info: {
-          content: '测试文字测试文字测试文字测试文字测试文字测试文字测试文字',
-        },
-        info_time: new Date().getTime() + '',
-        user: {
-          user_name: '李少杰',
-          user_photo:
-            'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597227459592&di=3aa680712d6075632866a0f56e99ca2b&imgtype=0&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201510%2F17%2F20151017233054_NK3rj.jpeg',
-          user_id: 11,
-          user_role: 2,
-        },
-      }
-      let right = {
-        info_type: 1,
-        info: {
-          content: '哈哈哈，你在测试吧',
-        },
-        info_time: new Date().getTime() + '',
-        user: {
-          user_name: '李少杰',
-          user_photo:
-            'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1597227459592&di=3aa680712d6075632866a0f56e99ca2b&imgtype=0&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201510%2F17%2F20151017233054_NK3rj.jpeg',
-          user_id: 111,
-          user_role: 2,
-        },
-      }
-      this.chat_data.push(left)
-      this.chat_data.push(right)
-    }
-    var config = {
-      appkey: _setting.RongYunAppKey,
-    }
-    // var IM = RongIMLib.init(config);
+    let access_token = localStorage.getItem('access_token');
     if (
       access_token &&
       access_token.length != undefined &&
       access_token != null
     ) {
-      getChatRoomInfo(this.course_info)
-        .then((res) => {})
-        .catch((rej) => {})
+      this.networkForChatInfo();
     }
-
     bus.$on('login', (msg) => {
       if (msg == 'success-todo') {
+        this.networkForChatInfo();
       }
-    })
+    });
+    this.initChatRoomSDK();
+    // setTimeout(() => {
+    //   console.log('user:',this.userInfo.user_id);//刷新之后加下延迟获取store
+    // }, 200);
   },
-  mounted() {},
-  updated() {
-    this.updateScroll()
+  methods: {
+    checkUserInfo() {
+      if (this.userInfo.user_id == '' || this.userInfo.user_id == undefined) {
+        let access_token = localStorage.getItem('access_token');
+        if (
+          access_token &&
+          access_token.length != undefined &&
+          access_token != null
+        ) {
+          let user = JSON.parse(localStorage.getItem('user'));
+          if (user) {
+            this.userInfo.user_id = user.id;
+            this.userInfo.user_name = user.user_nickname;
+            this.userInfo.user_photo = user.user_picture;
+            this.userInfo.user_role = 2;
+          }
+        } else {
+          bus.$emit('login', 'show-view');
+        }
+      }
+    },
+    showEmoji() {
+      document.getElementById('input').focus();
+    },
+    sendMsg() {
+      let input = document.getElementById('input');
+      let currentTime = new Date().getTime();
+      let textContent = input.value;
+      let infoC = {};
+      if (textContent.length > 0) {
+        infoC = { content: textContent };
+      }
+      let data = {
+        info_type: 1,
+        info: infoC,
+        info_time: currentTime + '',
+        user: this.userInfo,
+      };
+      this.chat_data.push(data);
+
+      let contentStr = JSON.stringify(data);
+      let base64Str = Base64.encode(contentStr);
+      let msg = new RongIMLib.TextMessage({ content: base64Str });
+
+      let conversationType = RongIMLib.ConversationType.CHATROOM;
+      let targetId = this.chat_id;
+      RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
+        onSuccess: function (message) {
+          // message 为发送的消息对象并且包含服务器返回的消息唯一 id 和发送消息时间戳
+          console.log('发送文本消息成功', message);
+        },
+        onError: function (errorCode) {
+          console.log('发送文本消息失败', errorCode);
+        },
+      });
+
+      input.blur();
+      input.value = '';
+    },
+    updateScroll() {
+      let chat_box = document.getElementById('live-chat');
+      // debugger
+      chat_box.scrollTop = chat_box.scrollHeight - 50;
+      console.log(chat_box.scrollHeight, '-=-=-=', chat_box.scrollTop);
+    },
+    networkForChatInfo() {
+      getChatRoomInfo(this.course_info)
+        .then((res) => {
+          this.chat_token = res.result.data.token;
+          this.chat_id = res.result.data.sdk_id;
+          this.rongYunConnect();
+        })
+        .catch((rej) => {});
+    },
+    initChatRoomSDK() {
+      RongIMLib.RongIMClient.init(_setting.RongYunAppKey);
+      RongIMClient.setConnectionStatusListener({
+        onChanged: function (status) {
+          // status 标识当前连接状态
+          switch (status) {
+            case RongIMLib.ConnectionStatus.CONNECTED:
+              console.log('链接成功');
+              break;
+            case RongIMLib.ConnectionStatus.CONNECTING:
+              console.log('正在链接');
+              break;
+            case RongIMLib.ConnectionStatus.DISCONNECTED:
+              console.log('断开连接');
+              break;
+            case RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT:
+              console.log('其他设备登录, 本端被踢');
+              break;
+            case RongIMLib.ConnectionStatus.DOMAIN_INCORRECT:
+              console.log('域名不正确, 请至开发者后台查看安全域名配置');
+              break;
+            case RongIMLib.ConnectionStatus.NETWORK_UNAVAILABLE:
+              console.log('网络不可用, 此时可调用 reconnect 进行重连');
+              break;
+            default:
+              console.log('链接状态为', status);
+              break;
+          }
+        },
+      });
+      let self = this;
+      RongIMClient.setOnReceiveMessageListener({
+        // 接收到的消息
+        onReceived: function (message) {
+          let messageContent = message.content;
+          // 判断消息类型
+          switch (message.messageType) {
+            case RongIMClient.MessageType.TextMessage: // 文字消息
+              {
+                console.log('text', messageContent.content);
+                console.log('文字内容', Base64.decode(messageContent.content));
+                let msg = Base64.decode(messageContent.content);
+                let msgInfo = JSON.parse(msg);
+                if (msgInfo.info_type != 9 && msgInfo.info_type != 11) {
+                  self.chat_data.push(msgInfo);
+                }
+              }
+              break;
+            case RongIMClient.MessageType.ImageMessage: // 图片消息
+              console.log('图片缩略图 base64', messageContent.content);
+              console.log('原图 url', messageContent.imageUri);
+              break;
+            case RongIMClient.MessageType.HQVoiceMessage: // 音频消息
+              console.log('音频 type ', messageContent.type); // 编解码类型，默认为 aac 音频
+              console.log('音频 url', messageContent.remoteUrl); // 播放：<audio src={remoteUrl} />
+              console.log('音频 时长', messageContent.duration);
+              break;
+            case RongIMClient.MessageType.RichContentMessage: // 富文本(图文)消息
+              console.log('文本内容', messageContent.content);
+              console.log('图片 base64', messageContent.imageUri);
+              console.log('原图 url', messageContent.url);
+              break;
+            case RongIMClient.MessageType.UnknownMessage: // 未知消息
+              console.log('未知消息, 请检查消息自定义格式是否正确', message);
+              break;
+            default:
+              console.log('收到消息', message);
+              break;
+          }
+        },
+      });
+    },
+    rongYunConnect() {
+      let self = this;
+      RongIMClient.connect(this.chat_token, {
+        onSuccess: function (userId) {
+          console.log('连接成功, 用户 id 为', userId);
+          // 连接已成功, 此时可通过 getConversationList 获取会话列表并展示
+          self.joinChatRoom();
+        },
+        onTokenIncorrect: function () {
+          console.log('连接失败, 失败原因: token 无效');
+        },
+        onError: function (errorCode) {
+          let info = '';
+          switch (errorCode) {
+            case RongIMLib.ErrorCode.TIMEOUT:
+              info = '链接超时';
+              break;
+            case RongIMLib.ConnectionState.UNACCEPTABLE_PAROTOCOL_VERSION:
+              info = '不可接受的协议版本';
+              break;
+            case RongIMLib.ConnectionState.IDENTIFIER_REJECTED:
+              info = 'appkey 不正确';
+              break;
+            case RongIMLib.ConnectionState.SERVER_UNAVAILABLE:
+              info = '服务器不可用';
+              break;
+            default:
+              info = errorCode;
+              break;
+          }
+          console.log('连接失败, 失败原因: ', info);
+        },
+      });
+    },
+    joinChatRoom() {
+      RongIMClient.getInstance().joinChatRoom(this.chat_id, 0, {
+        onSuccess: function () {
+          console.log('加入聊天室成功');
+        },
+        onError: function (error) {
+          console.log('加入聊天室失败', error);
+        },
+      });
+    },
   },
-}
+  beforeDestroy() {
+    RongIMClient.getInstance().quitChatRoom(this.chat_id, {
+      onSuccess: function () {
+        console.log('退出聊天室成功');
+        RongIMClient.getInstance().disconnect();
+        // RongIMClient.getInstance().logout();//disconnect();
+      },
+      onError: function (error) {
+        console.log('退出聊天室失败');
+      },
+    });
+  },
+};
 </script>
 
 <style lang="css" scoped>

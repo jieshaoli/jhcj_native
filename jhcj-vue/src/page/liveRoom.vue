@@ -71,14 +71,17 @@
 </template>
 
 <script>
-import liveChat from '../components/liveChat'
-import liveKeys from '../components/liveKeys'
-import liveIntro from '../components/liveIntro'
-import bus from '../common/bus'
-// import { getCourseInfo, pushComment } from '../api/tokenApi'
-import { getCourseMsg } from '../api/directApi'
+import liveChat from '../components/liveChat';
+import liveKeys from '../components/liveKeys';
+import liveIntro from '../components/liveIntro';
+import bus from '../common/bus';
+import { getCourseMsg } from '../api/courseApi';
 
-let player = undefined
+import 'xgplayer';
+import HlsPlayer from 'xgplayer-hls';
+import FlvPlayer from 'xgplayer-flv';
+
+let player = undefined;
 export default {
   name: 'liveRoom',
   data() {
@@ -90,7 +93,7 @@ export default {
       flvUrl: '',
       liveDefaultImg: '',
       courseIntroUrl: '',
-    }
+    };
   },
   components: {
     liveIntro,
@@ -99,9 +102,10 @@ export default {
   },
   methods: {
     initLivePlayer() {
-      let boxDiv = document.getElementById('mse')
+      let boxDiv = document.getElementById('mse');
       //http://vfx.mtime.cn/Video/2019/02/04/mp4/190204084208765161.mp4
       if (this.ifAppleBrowser() == 'apple') {
+        console.log('hls player');
         player = new HlsPlayer({
           id: 'mse',
           url: this.hlsUrl,
@@ -115,8 +119,9 @@ export default {
           height: boxDiv.height,
           'x5-video-player-type': 'h5',
           poster: this.liveDefaultImg,
-        })
+        });
       } else {
+        console.log('flv player');
         player = new FlvPlayer({
           id: 'mse',
           url: this.flvUrl,
@@ -130,65 +135,68 @@ export default {
           height: boxDiv.height,
           'x5-video-player-type': 'h5',
           poster: this.liveDefaultImg,
-        })
+        });
       }
 
       player.once('ready', () => {
-        console.log('ready')
-      })
+        console.log('ready');
+      });
       // 视频生成结束
       player.once('complete', () => {
-        console.log('complete')
-      })
+        console.log('complete');
+      });
       // 实例已销毁
       player.once('destroy', () => {
-        console.log('destroy')
-      })
+        console.log('destroy');
+      });
     },
     ifAppleBrowser() {
-      var ualower = navigator.userAgent.toLocaleLowerCase()
-      console.log(ualower)
-      if (ualower.indexOf('iphone os') > -1 || ualower.indexOf('mac os') > -1) {
-        return 'apple'
+      var ualower = navigator.userAgent.toLocaleLowerCase();
+      console.log(ualower);
+      if (
+        (ualower.indexOf('iphone os') > -1 || ualower.indexOf('mac os') > -1) &&
+        ualower.indexOf('mobile') > -1
+      ) {
+        return 'apple';
       } else {
-        return 'else'
+        return 'else';
       }
     },
     initRongYun() {},
     backPage() {
-      console.log('aaaaa')
+      console.log('aaaaa');
     },
     collect() {
       if (this.haveLogin()) {
-        let access_token = localStorage.getItem('access_token')
-        console.log(access_token, '有token')
+        let access_token = localStorage.getItem('access_token');
+        console.log(access_token, '有token');
       } else {
-        bus.$emit('login', 'show-view')
+        bus.$emit('login', 'show-view');
       }
     },
     haveLogin() {
-      let access_token = localStorage.getItem('access_token')
+      let access_token = localStorage.getItem('access_token');
       if (
         access_token != null &&
         access_token != undefined &&
         access_token.length > 1
       ) {
-        return true
+        return true;
       } else {
-        return false
+        return false;
       }
     },
-    getTheCourseLiveInfo() {
+    networkForLiveInfo() {
       if (this.haveLogin()) {
         getCourseMsg(this.course_info)
           .then((res) => {
-            let courseInfo = res.result.course
+            let courseInfo = res.result.course;
             if (courseInfo) {
-              this.title = courseInfo.course_head
-              this.hlsUrl = courseInfo.hls_pull_url
-              this.flvUrl = courseInfo.http_pull_url
-              this.liveDefaultImg = courseInfo.course_picture
-              this.courseIntroUrl = courseInfo.synopsis_url
+              this.title = courseInfo.course_head;
+              this.hlsUrl = courseInfo.hls_pull_url;
+              this.flvUrl = courseInfo.http_pull_url;
+              this.liveDefaultImg = courseInfo.course_picture;
+              this.courseIntroUrl = courseInfo.synopsis_url;
               if (this.hlsUrl.length > 1 && this.flvUrl.length > 1) {
                 // setTimeout(() => {
                 //   this.initLivePlayer()
@@ -201,7 +209,7 @@ export default {
     },
   },
   created() {
-    var hrefStr = window.location.href
+    var hrefStr = window.location.href;
     if (hrefStr.indexOf('id') > -1) {
       let id = window.location.href.split('id=')[1].split('&')[0];
       this.course_info = {
@@ -209,14 +217,14 @@ export default {
         uid: id,
       };
       console.log('liveRoom id = ', id);
-      this.getTheCourseLiveInfo();
+      this.networkForLiveInfo();
     }
   },
   mounted() {},
   destroyed() {
-    player.destroy(true)
+    player.destroy(true);
   },
-}
+};
 </script>
 
 <style lang="css" scoped>

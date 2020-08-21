@@ -1,12 +1,13 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue'
-import App from './App'
-import router from './router'
-import Mint from 'mint-ui'
-import  VConsole  from  'vconsole'
-import 'mint-ui/lib/style.css'
-import './assets/css/litewebchat.css'
+import Vue from 'vue';
+import App from './App';
+import router from './router';
+import Mint from 'mint-ui';
+import store from './store/store'
+import  VConsole  from  'vconsole';
+import 'mint-ui/lib/style.css';
+import './assets/css/litewebchat.css';
 
 let vConsole = new VConsole();
 
@@ -33,6 +34,18 @@ Vue.filter('showTime', function (value) {
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  mounted() {
+    if (sessionStorage.getItem('state')) {
+      this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('state'))));
+    }
+    window.addEventListener('beforeunload', this.saveState);
+  },
+  methods: {
+    saveState() {
+      sessionStorage.setItem('state', JSON.stringify(this.$store.state));
+    }
+  },
 })
