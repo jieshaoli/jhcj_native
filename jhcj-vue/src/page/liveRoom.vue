@@ -187,7 +187,7 @@ export default {
       }
     },
     networkForLiveInfo() {
-      if (this.haveLogin()) {
+      // if (this.haveLogin()) {
         getCourseMsg(this.course_info)
           .then((res) => {
             let courseInfo = res.result.course;
@@ -205,7 +205,7 @@ export default {
             }
           })
           .catch((rej) => {});
-      }
+      // }
     },
   },
   created() {

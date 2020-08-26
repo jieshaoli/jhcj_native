@@ -51,7 +51,7 @@ ax.interceptors.response.use(
       return response.data;
     } else {
       console.log("else:", response);
-      if (code === 10000 || code === 10001) {
+      if (code === 10000 || code === 10001 || code === 10004 || code === 10005 || code === 10006) {
         localStorage.removeItem("access_token");
         access_token = '';
       }

@@ -22,11 +22,11 @@ Vue.filter('showTime', function (value) {
   }else{
     var nDate = new Date(datetime);
     let yyyy = nDate.getFullYear();
-    let MM = nDate.getMonth()+1 > 10 ? nDate.getMonth()+1 : '0'+(nDate.getMonth()+1);
-    let DD = nDate.getDate() > 10 ? nDate.getDate() : '0' + nDate.getDate();
-    let h = nDate.getHours() > 10 ? nDate.getHours() : '0'+nDate.getHours();
-    let m = nDate.getMinutes() > 10 ? nDate.getMinutes() : '0' + nDate.getMinutes();
-    let s = nDate.getSeconds() > 10 ? nDate.getSeconds() : '0' + nDate.getSeconds();
+    let MM = nDate.getMonth()+1 >= 10 ? nDate.getMonth()+1 : '0'+(nDate.getMonth()+1);
+    let DD = nDate.getDate() >= 10 ? nDate.getDate() : '0' + nDate.getDate();
+    let h = nDate.getHours() >= 10 ? nDate.getHours() : '0'+nDate.getHours();
+    let m = nDate.getMinutes() >= 10 ? nDate.getMinutes() : '0' + nDate.getMinutes();
+    let s = nDate.getSeconds() >= 10 ? nDate.getSeconds() : '0' + nDate.getSeconds();
     return h + ':' + m;
   }
 });

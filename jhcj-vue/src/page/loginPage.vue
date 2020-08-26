@@ -160,7 +160,7 @@ export default {
   position: absolute;
 }
 #login-view .form-view {
-  margin: 60% auto;
+  margin: 35% auto;
   width: 80%;
   height: 50%;
   background: white;
@@ -186,6 +186,7 @@ export default {
   height: 100%;
   background: #e3191a;
   border-radius: 6px;
+  border-width: 0px;
   font-size: 16px;
   color: white;
 }

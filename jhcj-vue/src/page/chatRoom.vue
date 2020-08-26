@@ -1,19 +1,115 @@
 <template>
-  <div>
-    {{title}}
+  <div id="chat-room">
+    <div class="fixed-div">
+      <mt-header :title=title
+                 class="header">
+        <router-link to="/"
+                     slot="left">
+          <mt-button icon="back"
+                     @click="backPage">
+          </mt-button>
+        </router-link>
+        <mt-button class="nav-right-btn"
+                   slot="right"
+                   @click="collect">
+          <img style="width:20px;height:20px"
+               src="../assets/image/collection.png"
+               alt="" />
+        </mt-button>
+      </mt-header>
+    </div>
+    <div class="content">
+      <live-chat v-bind:course_info="course_info"></live-chat>
+    </div>
   </div>
 </template>
 
 <script>
+import liveChat from '../components/liveChat';
+import { getCourseMsg } from '../api/courseApi';
+import bus from '../common/bus';
+
 export default {
   name: 'chatRoom',
   data() {
     return {
       title: '文字直播课',
+      course_info: {},
     };
   },
+  components: {
+    liveChat,
+  },
+  created() {
+    var hrefStr = window.location.href;
+    if (hrefStr.indexOf('id') > -1) {
+      let id = window.location.href.split('id=')[1].split('&')[0];
+      this.course_info = {
+        type: 1,
+        uid: id,
+      };
+      console.log('chatRoom id = ', id);
+      this.networkForCourseInfo();
+    }
+  },
+  methods: {
+    networkForCourseInfo() {
+      getCourseMsg(this.course_info)
+          .then((res) => {
+            let courseInfo = res.result.course;
+            if (courseInfo) {
+              this.title = courseInfo.course_head;
+            }
+          })
+          .catch((rej) => {});
+    },
+    collect() {
+      if (this.haveLogin()) {
+        let access_token = localStorage.getItem('access_token');
+        console.log(access_token, '有token');
+      } else {
+        bus.$emit('login', 'show-view');
+      }
+    },
+    haveLogin() {
+      let access_token = localStorage.getItem('access_token');
+      if (
+        access_token != null &&
+        access_token != undefined &&
+        access_token.length > 1
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    backPage() {
+      console.log('aaaaa');
+    },
+  }
 };
 </script>
 
 <style scoped>
+.nav-right-btn {
+  width: 40px;
+  height: 40px;
+}
+.fixed-div {
+  position: fixed;
+  width: 100%;
+}
+.header {
+  background: white;
+  color: #323232;
+}
+.content {
+  position: fixed;
+  top: 40px;
+  background: white;
+  width: 100%;
+  overflow-y: hidden;
+  /* height: 100%; */
+  height: calc(100vh - 40px);
+}
 </style>
