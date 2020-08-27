@@ -61,7 +61,7 @@ new Vue({
     system.win = p.indexOf("Win") == 0;
     system.mac = p.indexOf("Mac") == 0;
     system.x11 = p == "X11" || p.indexOf("Linux") == 0;
-    if (system.win || system.mac || system.xll) {
+    if (system.win || system.mac || system.x11) {
       console.log("电脑页面");
     } else {
       console.log("手机页面");
