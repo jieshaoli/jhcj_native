@@ -312,7 +312,6 @@ export default {
           switch (message.messageType) {
             case RongIMClient.MessageType.TextMessage: // 文字消息
               {
-                console.log('text', messageContent.content);
                 console.log('文字内容', Base64.decode(messageContent.content));
                 let msg = Base64.decode(messageContent.content);
                 let msgInfo = JSON.parse(msg);

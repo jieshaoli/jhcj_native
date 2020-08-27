@@ -8,7 +8,7 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/liveRoom',
+      path: '/',
       name: 'liveRoom',
       component: liveRoom,
       children: [
@@ -21,15 +21,16 @@ export default new Router({
           component: () => import('../components/liveKeys.vue'),
         },
         {
-          path: 'liveChat',
+          path: '/liveChat',
           component: () => import('../components/liveKeys.vue')
         }
       ]
     },
     {
       path: '/chatRoom',
+      name: 'chatRoom',
       component: chatRoom
     }
   ],
-  mode: 'history'
+  // mode: 'history'
 })
