@@ -21,8 +21,17 @@
   </div>
 </template>
 <script>
+import { getLiveKeyPoints } from '@/api/courseApi.js';
+import bus from '../common/bus';
+
 export default {
   name: 'liveKeys',
+  props: {
+    course_id: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       keysInfo: [],
@@ -37,6 +46,52 @@ export default {
       };
       this.keysInfo.push(element);
     }
+    bus.$on('login', (msg) => {
+      if (msg == 'success-todo') {
+        this.keysInfo = [];
+        this.networkForKeyPoints();
+      }
+    });
+    bus.$on('liveKeyPoints', (msg) => {
+      console.log(JSON.stringify(msg));
+      let element = {
+        ctime: msg.info_time,
+        contentStr: msg.info.content,
+      };
+      this.keysInfo.push(element);
+    });
+    if (this.haveLogin()) {
+      this.networkForKeyPoints();
+    }
+  },
+  methods: {
+    networkForKeyPoints() {
+      getLiveKeyPoints({ course_id: this.course_id })
+        .then((res) => {
+          let data = res.result.data;
+          data.forEach((info) => {
+            let element = {
+              ctime: info.info_time,
+              contentStr: info.info.content,
+            };
+            this.keysInfo.push(element);
+          });
+        })
+        .catch((rej) => {});
+    },
+    haveLogin() {
+      let access_token = localStorage.getItem('access_token');
+      console.log(access_token,'access_token');
+      if (
+        access_token != null &&
+        access_token != undefined &&
+        access_token.length > 1
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    },
   },
 };
 </script>

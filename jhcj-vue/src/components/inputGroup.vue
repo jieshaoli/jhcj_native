@@ -42,9 +42,8 @@ export default {
 .text_group {
   background: white;
   border-radius: 6px;
-  border: 0.5px solid #ddd;
+  border: 1.0px solid #ddd;
   height: 50px;
-
 }
 .text_group .input_lab {
   outline-style: none;

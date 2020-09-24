@@ -12,4 +12,7 @@ success-todo
 /*
 bus.$emit('addUser') //响应式自动更新了
 */
+/*
+bus.$emit('liveKeyPoints')
+ */
 export default bus;

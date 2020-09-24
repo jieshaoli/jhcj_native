@@ -38,7 +38,7 @@ ax.interceptors.response.use(
     let code = response.data.code;
     if ((status === 200 || status === 201) && code === 0) {
       if (
-        response.request.responseURL.indexOf("/app/v1/login/userLoginCode") > -1
+        (response.request.responseURL.indexOf("/app/v1/login/userLoginCode") > -1) || (response.request.responseURL.indexOf("/app/v1/login/userLogin") > -1)
       ) {
         localStorage.setItem("access_token", response.data.result.access_token);
         localStorage.setItem(
@@ -53,6 +53,7 @@ ax.interceptors.response.use(
       console.log("else:", response);
       if (code === 10000 || code === 10001 || code === 10004 || code === 10005 || code === 10006) {
         localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
         access_token = '';
       }
       return Promise.reject(response);

@@ -1,11 +1,11 @@
-import { login, getUserBaseInfo } from "../api/userApi";
+import { codeLogin, passwordLogin, getUserBaseInfo } from "../api/userApi";
 const actions = {
   addTest({ commit }, msg) {
     commit("SET_TEST", msg);
   },
-  Login({ commit }, info) {
+  LoginCode({ commit }, info) {
     return new Promise((resolve, reject) => {
-      login(info)
+      codeLogin(info)
         .then(res => {
           const tokenStr = res.result.access_token;
           const refreshStr = res.result.refresh_token;
@@ -17,6 +17,19 @@ const actions = {
           reject(rej);
         });
     });
+  },
+  LoginPassword({ commit }, info) {
+    return new Promise((resolve, reject) => {
+      passwordLogin(info).then(res => {
+        const tokenStr = res.result.access_token;
+        const refreshStr = res.result.refresh_token;
+        commit("SET_ACCESS_TOKEN", tokenStr);
+        commit("SET_REFRESH_TOKEN", refreshStr);
+        resolve(res);
+      }).catch(rej =>{
+        reject(rej);
+      })
+    })
   },
   AddUser({ commit }) {
     return new Promise((resolve, reject) => {

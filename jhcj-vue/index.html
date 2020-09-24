@@ -3,8 +3,10 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>君汇财经</title>
+  <!-- <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script> -->
   <script src="http://g.tbcdn.cn/mtb/lib-flexible/0.3.4/??flexible_css.js,flexible.js"></script>
   <!-- <meta name="referrer" content="origin"> -->
   <!-- HTTP 版-->
@@ -13,7 +15,7 @@
   <!-- <script src="https://cdn.ronghub.com/RongIMLib-2.5.3.js"></script> -->
   <!-- 压缩版 -->
   <script src="https://cdn.ronghub.com/RongIMLib-2.5.3.min.js"></script>
-
+  <meta name="x5-fullscreen" content="true">
   <!-- emoji -->
   <!-- <link rel="stylesheet" href="./static/emoji/css/jquery.emoji.css" /> -->
   <!-- <script src="http://cdn.bootcss.com/jquery/1.11.3/jquery.js"></script> -->
@@ -27,6 +29,31 @@
 <body>
 
   <div id="app"></div>
+  <script>
+    // $("html,body").height(window.innerHeight);
+    window.onload = function () {
+      // 阻止双击放大
+      var lastTouchEnd = 0;
+      document.addEventListener('touchstart', function (event) {
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+      });
+      document.addEventListener('touchend', function (event) {
+        var now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+
+      // 阻止双指放大
+      document.addEventListener('gesturestart', function (event) {
+        event.preventDefault();
+      });
+    }
+
+  </script>
   <!-- built files will be auto injected -->
 </body>
 

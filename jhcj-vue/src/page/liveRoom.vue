@@ -12,9 +12,9 @@
         <mt-button class="nav-right-btn"
                    slot="right"
                    @click="collect">
-          <img style="width:20px;height:20px"
-               src="../assets/image/collection.png"
-               alt="" />
+          <img id="collectImg"
+               style="width:20px;height:20px"
+               :src="isCollected ? require('../assets/image/collected.png') : require('../assets/image/collection.png')" />
         </mt-button>
         <!-- <mt-button class="nav-right-btn"
                    slot="right"
@@ -29,7 +29,8 @@
                   :show-indicators="false"
                   class="swipe">
         </mt-swipe> -->
-        <div class="swipe"></div>
+        <div class="swipe"
+             id="videoBg"></div>
         <div id="mse"></div>
       </div>
       <div class="live-choose">
@@ -57,7 +58,7 @@
         </mt-tab-container-item>
         <mt-tab-container-item id="要点">
           <div class="content-box">
-            <live-keys></live-keys>
+            <live-keys v-bind:course_id="course_id"></live-keys>
           </div>
         </mt-tab-container-item>
         <mt-tab-container-item id="交流">
@@ -74,12 +75,19 @@
 import liveChat from '../components/liveChat';
 import liveKeys from '../components/liveKeys';
 import liveIntro from '../components/liveIntro';
+import { MessageBox } from 'mint-ui';
 import bus from '../common/bus';
-import { getCourseMsg } from '../api/courseApi';
+import {
+  getCourseMsg,
+  keepTheCourse,
+  cancelKeepTheCourse,
+} from '../api/courseApi';
 
 import 'xgplayer';
 import HlsPlayer from 'xgplayer-hls';
 import FlvPlayer from 'xgplayer-flv';
+import { _debounce, _throttling } from '../common/publicFunc.js';
+// import func from '../../vue-temp/vue-editor-bridge';
 
 let player = undefined;
 export default {
@@ -93,6 +101,8 @@ export default {
       flvUrl: '',
       liveDefaultImg: '',
       courseIntroUrl: '',
+      course_id: '',
+      isCollected: false,
     };
   },
   components: {
@@ -168,8 +178,7 @@ export default {
     },
     collect() {
       if (this.haveLogin()) {
-        let access_token = localStorage.getItem('access_token');
-        console.log(access_token, '有token');
+        this.networkForIfKeepCourse();
       } else {
         bus.$emit('login', 'show-view');
       }
@@ -188,25 +197,47 @@ export default {
     },
     networkForLiveInfo() {
       // if (this.haveLogin()) {
-        getCourseMsg(this.course_info)
-          .then((res) => {
-            let courseInfo = res.result.course;
-            if (courseInfo) {
-              this.title = courseInfo.course_head;
-              this.hlsUrl = courseInfo.hls_pull_url;
-              this.flvUrl = courseInfo.http_pull_url;
-              this.liveDefaultImg = courseInfo.course_picture;
-              this.courseIntroUrl = courseInfo.synopsis_url;
-              if (this.hlsUrl.length > 1 && this.flvUrl.length > 1) {
-                // setTimeout(() => {
-                //   this.initLivePlayer()
-                // }, 500)
-              }
+      getCourseMsg(this.course_info)
+        .then((res) => {
+          let courseInfo = res.result.course;
+          if (courseInfo) {
+            this.title = courseInfo.course_head;
+            this.hlsUrl = courseInfo.hls_pull_url;
+            this.flvUrl = courseInfo.http_pull_url;
+            this.liveDefaultImg = courseInfo.course_picture;
+            this.courseIntroUrl = courseInfo.synopsis_url;
+            if (
+              this.liveDefaultImg.length > 1 &&
+              typeof this.liveDefaultImg == 'string'
+            ) {
+              var bg = document.getElementById('videoBg');
+              bg.style.backgroundImage = 'url(' + this.liveDefaultImg + ')';
             }
-          })
-          .catch((rej) => {});
+            if (this.hlsUrl.length > 1 && this.flvUrl.length > 1) {
+              // setTimeout(() => {
+              //   this.initLivePlayer()
+              // }, 500)
+            }
+          }
+        })
+        .catch((rej) => {});
       // }
     },
+    networkForIfKeepCourse:  _throttling(function() {
+      if (this.isCollected) {
+        cancelKeepTheCourse(this.course_info)
+          .then((res) => {
+            this.isCollected = false;
+          })
+          .catch((rej) => {});
+      } else {
+        keepTheCourse(this.course_info)
+          .then((res) => {
+            this.isCollected = true;
+          })
+          .catch((rej) => {});
+      }
+    }, 1500),
   },
   created() {
     var hrefStr = window.location.href;
@@ -216,8 +247,11 @@ export default {
         type: 2,
         uid: id,
       };
+      this.course_id = this.course_info.uid;
       console.log('liveRoom id = ', id);
       this.networkForLiveInfo();
+    } else {
+      MessageBox.alert('课程出现错误', '出错');
     }
   },
   mounted() {},
@@ -310,6 +344,6 @@ export default {
   width: 100%;
   overflow-y: hidden;
   /* height: 100%; */
-  height: calc(100vh - 305px);
+  height: calc(100% - 305px);
 }
 </style>

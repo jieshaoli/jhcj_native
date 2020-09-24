@@ -56,6 +56,7 @@ new Vue({
     // <script>
     var system = {};
     var p = navigator.platform;
+    console.log('platform:',p)
     var u = navigator.userAgent;
 
     system.win = p.indexOf("Win") == 0;

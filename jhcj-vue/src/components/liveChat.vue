@@ -1,142 +1,158 @@
 <template>
   <div id="live-chat">
     <div class="lite-chatbox"
-         :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'">
-      <ul>
-        <li v-for="(item, index) in chat_data"
-            :key="index">
-          <div class="cright cmsg"
-               v-if="item.user.user_id == userInfo.user_id">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="time">{{ item.info_time | showTime }}</span>
-            <span class="name">{{ item.user.user_name }}</span><br>
-            <span class="content">{{ item.info.content }}</span>
-          </div>
-          <div class="cleft cmsg"
-               v-else-if="item.user.user_id != userInfo.user_id && item.info_type == 1">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="name">{{ item.user.user_name }}</span>
-            <span class="time">{{ item.info_time | showTime }}</span><br>
-            <span class="content">{{ item.info.content }}</span>
-          </div>
-          <div class="cleft cmsg"
-               v-else-if="item.user.user_id == teacher_id && item.info_type == 2">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="name">{{ item.user.user_name }}</span>
-            <span class="time">{{ item.info_time | showTime }}</span><br>
-            <span class="content"><img :src="item.info.image_url" /></span>
-          </div>
-          <div class="cleft cmsg"
-               v-else-if="item.user.user_id == teacher_id && item.info_type == 3">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="name">{{ item.user.user_name }}</span>
-            <span class="time">{{ item.info_time | showTime }}</span><br>
-            <span class="content">这是播放音频的</span>
-          </div>
-          <div class="cleft cmsg"
-               v-else-if="item.user.user_id == teacher_id && item.info_type == 4">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="name">{{ item.user.user_name }}</span>
-            <span class="time">{{ item.info_time | showTime }}</span><br>
-            <span class="content">{{ item.info.content }}<br /><img :src="item.info.image_url" /></span>
-          </div>
-          <div class="cleft cmsg"
-               v-else-if="item.user.user_id == teacher_id && item.info_type == 5">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="name">{{ item.user.user_name }}</span>
-            <span class="time">{{ item.info_time | showTime }}</span><br>
-            <span class="content">
-              <div class="questionDiv">
-                <span class="questionName">【问】{{ item.info.qa_name }}</span>
-                <span class="questionTime">{{ item.info.qa_time | showTime }}</span><br />
-                <span class="questionContent">{{ item.info.qa_content }}</span>
-              </div>
-              【答】{{ item.info.content }}
-            </span>
-          </div>
-          <div class="cleft cmsg"
-               v-else-if="item.user.user_id == teacher_id && item.info_type == 6">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="name">{{ item.user.user_name }}</span>
-            <span class="time">{{ item.info_time | showTime }}</span><br>
-            <span class="content">
-              <div class="questionDiv">
-                <span class="questionName">【问】{{ item.info.qa_name }}</span>
-                <span class="questionTime">{{ item.info.qa_time | showTime }}</span><br />
-                <span class="questionContent">{{ item.info.qa_content }}</span>
-              </div>
-              【答】<img :src="item.info.image_url" />
-            </span>
-          </div>
-          <div class="cleft cmsg"
-               v-else-if="item.user.user_id == teacher_id && item.info_type == 7">
-            <img class="headIcon radius"
-                 ondragstart="return false;"
-                 oncontextmenu="return false;"
-                 :src="item.user.user_photo" />
-            <span class="name">{{ item.user.user_name }}</span>
-            <span class="time">{{ item.info_time | showTime }}</span><br>
-            <span class="content">
-              <div class="questionDiv">
-                <span class="questionName">【问】{{ item.info.qa_name }}</span>
-                <span class="questionTime">{{ item.info.qa_time | showTime }}</span><br />
-                <span class="questionContent">{{ item.info.qa_content }}</span>
-              </div>
-              【答】{{ item.info.content }}<br /><img :src="item.info.image_url" />
-            </span>
-          </div>
-        </li>
-      </ul>
+         :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
+         @click.stop="inputBlur">
+      <mt-loadmore :top-method="loadTop"
+                   ref="loadmore">
+        <ul>
+          <li v-for="(item, index) in chat_data"
+              :key="index">
+            <div class="cright cmsg"
+                 v-if="item.content.content.user.user_id == userInfo.user_id">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="time">{{ item.content.content.info_time | showTime }}</span>
+              <span class="name">{{ item.content.content.user.user_name }}</span><br>
+              <span class="content">{{ item.content.content.info.content }}</span>
+            </div>
+            <div class="cleft cmsg"
+                 v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 1">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="name">{{ item.content.content.user.user_name }}</span>
+              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="content">{{ item.content.content.info.content }}</span>
+            </div>
+            <div class="cleft cmsg"
+                 v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 2">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="name">{{ item.content.content.user.user_name }}</span>
+              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="content"><img :src="item.content.content.info.image_url" /></span>
+            </div>
+            <div class="cleft cmsg"
+                 v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 3">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="name">{{ item.content.content.user.user_name }}</span>
+              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="content">这是播放音频的</span>
+            </div>
+            <div class="cleft cmsg"
+                 v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 4">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="name">{{ item.content.content.user.user_name }}</span>
+              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="content">{{ item.content.content.info.content }}<br /><img :src="item.content.content.info.image_url" /></span>
+            </div>
+            <div class="cleft cmsg"
+                 v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 5">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="name">{{ item.content.content.user.user_name }}</span>
+              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="content">
+                <div class="questionDiv">
+                  <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
+                  <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
+                  <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
+                </div>
+                【答】{{ item.content.content.info.content }}
+              </span>
+            </div>
+            <div class="cleft cmsg"
+                 v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 6">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="name">{{ item.content.content.user.user_name }}</span>
+              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="content">
+                <div class="questionDiv">
+                  <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
+                  <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
+                  <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
+                </div>
+                【答】<img :src="item.content.content.info.image_url" />
+              </span>
+            </div>
+            <div class="cleft cmsg"
+                 v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 7">
+              <img class="headIcon radius"
+                   ondragstart="return false;"
+                   oncontextmenu="return false;"
+                   :src="item.content.content.user.user_photo" />
+              <span class="name">{{ item.content.content.user.user_name }}</span>
+              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="content">
+                <div class="questionDiv">
+                  <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
+                  <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
+                  <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
+                </div>
+                【答】{{ item.content.content.info.content }}<br /><img :src="item.content.content.info.image_url" />
+              </span>
+            </div>
+          </li>
+        </ul>
+      </mt-loadmore>
     </div>
 
-    <div :class="if_more_x ? 'input-box2' : 'input-box1'">
-      <!-- <textarea name="text"
-                id="editor"
-                :placeholder="input_placeholder"
-                @focus="checkUserInfo"></textarea> -->
-      <input id="editor"
-             type="text"
-             :placeholder="input_placeholder"
-             @focus="checkUserInfo">
-      <!-- <button id="smile"
-              style="width:25px;"> -->
-        <!-- <img style="width:25px;"
-             src="../assets/image/smile.png"
-             alt="" /> -->
-      <!-- </button> -->
-      <mt-button class="send-btn"
-                 type="primary"
-                 @click.native="sendMsg">发送</mt-button>
+    <div :class="if_more_x ? 'input-box2' : 'input-box1'"
+         id="input-tool">
+      <div class="tool-header">
+        <textarea id="editor"
+                  type="text"
+                  v-model="input_text"
+                  :placeholder="input_placeholder"
+                  @focus="textFocus"
+                  @blur="textBlur"></textarea>
+        <button id="smile"
+                style="width:25px;"
+                @click="showEmoji">
+          <img id="smileImg"
+               style="width:25px;"
+               src="../assets/image/smile.png"
+               alt="" />
+        </button>
+        <mt-button class="send-btn"
+                   type="primary"
+                   @click.native="sendMsg">发送</mt-button>
+      </div>
+      <transition name="fade">
+        <div class="tool-emoji"
+             v-show="isShowingEmoji">
+          <emoji-view v-on:emoji="emojiInput"
+                      v-show="isShowingEmoji"></emoji-view>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
 <script>
 import _setting from '../common/setting';
 import bus from '../common/bus';
-import { getChatRoomInfo } from '../api/courseApi';
+import { getChatRoomInfo, getChatHistory } from '../api/courseApi';
 import { mapGetters } from 'vuex';
 import { Base64 } from 'js-base64';
+import emojiView from './emojiView.vue';
+import { Toast, Loadmore, Indicator } from 'mint-ui';
 
 export default {
   name: 'liveChat',
@@ -145,6 +161,10 @@ export default {
       type: Object,
     },
   },
+  components: {
+    emojiView,
+    Loadmore,
+  },
   data() {
     return {
       input_placeholder: '输入内容...',
@@ -152,6 +172,13 @@ export default {
       chat_token: '',
       chat_id: '',
       if_more_x: true,
+      input_text: '',
+      isShowingEmoji: false,
+      isConnected: false,
+      isEnterRoom: false,
+      canLoadMore: true,
+      needScroll: true,
+      scrollH: 0,
     };
   },
   mounted() {
@@ -161,7 +188,14 @@ export default {
     } else {
       this.if_more_x = false;
     }
-
+    this.$nextTick(() => {
+      if (this.haveLogin()) {
+        if (this.userInfo.user_id == '' || this.userInfo.user_id == undefined) {
+          Indicator.open('Loading...');
+          this.networkForSaveUser();
+        }
+      }
+    })
   },
   updated() {
     this.updateScroll();
@@ -172,12 +206,7 @@ export default {
     }),
   },
   created() {
-    let access_token = localStorage.getItem('access_token');
-    if (
-      access_token &&
-      access_token.length != undefined &&
-      access_token != null
-    ) {
+    if (this.haveLogin()) {
       this.networkForChatInfo();
     }
     bus.$on('login', (msg) => {
@@ -191,22 +220,77 @@ export default {
     // }, 200);
   },
   methods: {
-    checkUserInfo() {
-      console.log('checkUserInfo');
-      if (this.userInfo.user_id == '' || this.userInfo.user_id == undefined) {
-        let access_token = localStorage.getItem('access_token');
-        if (this.haveLogin()) {
-          let user = JSON.parse(localStorage.getItem('user'));
-          if (user) {
-            this.userInfo.user_id = user.id;
-            this.userInfo.user_name = user.user_nickname;
-            this.userInfo.user_photo = user.user_picture;
-            this.userInfo.user_role = 2;
-          }
-        } else {
-          bus.$emit('login', 'show-view');
-        }
+    showEmoji() {
+      this.judgeToLogin();
+      this.switchEmoji();
+    },
+    switchEmoji() {
+      var bg = document.getElementById('input-tool');
+      var image = document.getElementById('smileImg');
+      let chat_box = document.getElementById('lite-chat-box1');
+      var bgH = 50,
+        top = 0;
+      if (this.if_more_x) {
+        bgH = 84;
+        chat_box = document.getElementById('lite-chat-box2');
       }
+      if (this.isShowingEmoji) {
+        this.isShowingEmoji = false;
+        image.setAttribute('src', require('../assets/image/smile.png'));
+        let input = document.getElementById('editor');
+        // input.focus();
+        top = 0;
+      } else {
+        image.setAttribute('src', require('../assets/image/keyboard.png'));
+        this.isShowingEmoji = true;
+        bgH += 160;
+        top = -160;
+      }
+      bg.style.height = bgH + 'px';
+      chat_box.style.marginTop = top + 'px';
+    },
+    emojiInput(text) {
+      this.input_text += text;
+    },
+    inputBlur() {
+      if (this.isShowingEmoji) {
+        this.switchEmoji();
+      } else {
+        let input = document.getElementById('editor');
+        input.blur();
+      }
+    },
+    judgeToLogin() {
+      if (this.haveLogin()) {
+        if (this.userInfo.user_id == '' || this.userInfo.user_id == undefined) {
+          if (
+            this.$store.state.user.user_id &&
+            this.$store.state.user.user_id.length > 0
+          ) {
+            this.userInfo.user_id = this.$store.state.user.user_id;
+            this.userInfo.user_name = this.$store.state.user.user_name;
+            this.userInfo.user_photo = this.$store.state.user.user_photo;
+            this.userInfo.user_role = this.$store.state.user.user_role;
+          } else {
+            Indicator.open('Loading...');
+            this.networkForSaveUser();
+          }
+        }
+        return true;
+      } else {
+        bus.$emit('login', 'show-view');
+        return false;
+      }
+    },
+    textFocus(e) {
+      if (this.judgeToLogin()) {
+        this.isShowingEmoji = true;
+        this.switchEmoji();
+        this.needScroll = true;
+      }
+    },
+    textBlur() {
+      console.log('blur');
     },
     haveLogin() {
       let access_token = localStorage.getItem('access_token');
@@ -221,12 +305,17 @@ export default {
       }
     },
     sendMsg() {
+      this.judgeToLogin();
       let input = document.getElementById('editor');
       let currentTime = new Date().getTime();
-      let textContent = input.value;
+      let textContent = this.input_text;
       let infoC = {};
+      input.blur();
       if (textContent.length > 0) {
         infoC = { content: textContent };
+      } else {
+        Toast('请输入内容再发送');
+        return;
       }
       let data = {
         info_type: 1,
@@ -234,25 +323,38 @@ export default {
         info_time: currentTime + '',
         user: this.userInfo,
       };
-      this.chat_data.push(data);
+      this.sendToRongIM(data);
 
+      this.input_text = '';
+    },
+    sendToRongIM(data) {
       let contentStr = JSON.stringify(data);
       let base64Str = Base64.encode(contentStr);
       let msg = new RongIMLib.TextMessage({ content: base64Str });
       let conversationType = RongIMLib.ConversationType.CHATROOM;
       let targetId = this.chat_id;
+      let self = this;
       RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
         onSuccess: function (message) {
           // message 为发送的消息对象并且包含服务器返回的消息唯一 id 和发送消息时间戳
           console.log('发送文本消息成功', message);
+          let chatMessage = {
+            content: {
+              content: data,
+            },
+            messageUId: message.messageUId,
+            objectName: message.objectName,
+            senderUserId: message.senderUserId,
+            sentTime: message.sentTime,
+            targetId: message.targetId,
+          };
+          self.needScroll = true;
+          self.chat_data.push(chatMessage);
         },
         onError: function (errorCode) {
           console.log('发送文本消息失败', errorCode);
         },
       });
-
-      input.blur();
-      input.value = '';
     },
     updateScroll() {
       let chat_box;
@@ -261,19 +363,23 @@ export default {
       } else {
         chat_box = document.getElementById('lite-chat-box1');
       }
-
-      chat_box.scrollTop = chat_box.scrollHeight;
+      if (this.needScroll) {
+        chat_box.scrollTop = chat_box.scrollHeight;
+      } else {
+        if (this.canLoadMore) {
+          chat_box.scrollTop = chat_box.scrollHeight - this.scrollH - 20;
+        } else {
+          chat_box.scrollTop = chat_box.scrollHeight - this.scrollH;
+        }
+      }
+      this.scrollH = chat_box.scrollHeight;
     },
-    networkForChatInfo() {
-      getChatRoomInfo(this.course_info)
-        .then((res) => {
-          this.chat_token = res.result.data.token;
-          this.chat_id = res.result.data.sdk_id;
-          this.rongYunConnect();
-        })
-        .catch((rej) => {});
+    removeAccessToken() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
     },
     initChatRoomSDK() {
+      let self = this;
       RongIMLib.RongIMClient.init(_setting.RongYunAppKey);
       RongIMClient.setConnectionStatusListener({
         onChanged: function (status) {
@@ -289,7 +395,11 @@ export default {
               console.log('断开连接');
               break;
             case RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT:
-              console.log('其他设备登录, 本端被踢');
+              {
+                console.log('其他设备登录, 本端被踢');
+                self.removeAccessToken();
+                bus.$emit('login', 'show-view');
+              }
               break;
             case RongIMLib.ConnectionStatus.DOMAIN_INCORRECT:
               console.log('域名不正确, 请至开发者后台查看安全域名配置');
@@ -303,7 +413,6 @@ export default {
           }
         },
       });
-      let self = this;
       RongIMClient.setOnReceiveMessageListener({
         // 接收到的消息
         onReceived: function (message) {
@@ -316,7 +425,22 @@ export default {
                 let msg = Base64.decode(messageContent.content);
                 let msgInfo = JSON.parse(msg);
                 if (msgInfo.info_type != 9 && msgInfo.info_type != 11) {
-                  self.chat_data.push(msgInfo);
+                  if (msgInfo.info_type === 10) {
+                    bus.$emit('liveKeyPoints', msgInfo);
+                  } else {
+                    let chatMessage = {
+                      content: {
+                        content: msgInfo,
+                      },
+                      messageUId: message.messageUId,
+                      objectName: message.objectName,
+                      senderUserId: message.senderUserId,
+                      sentTime: message.sentTime,
+                      targetId: message.targetId,
+                    };
+                    self.needScroll = true;
+                    self.chat_data.push(chatMessage);
+                  }
                 }
               }
               break;
@@ -337,8 +461,25 @@ export default {
             case RongIMClient.MessageType.UnknownMessage: // 未知消息
               console.log('未知消息, 请检查消息自定义格式是否正确', message);
               break;
+            case RongIMClient.MessageType.RecallCommandMessage:
+              {
+                console.log('收到撤回消息', message);
+                let mesUId = message.content.messageUId;
+                let at = -1;
+                for (let index = 0; index < self.chat_data.length; index++) {
+                  let ele = self.chat_data[index];
+                  if (ele.messageUId == mesUId) {
+                    at = index;
+                  }
+                }
+                if (at >= 0) {
+                  self.needScroll = true;
+                  self.chat_data.splice(at, 1);
+                }
+              }
+              break;
             default:
-              console.log('收到消息', message);
+              console.log('default:收到消息', message);
               break;
           }
         },
@@ -350,6 +491,7 @@ export default {
         onSuccess: function (userId) {
           console.log('连接成功, 用户 id 为', userId);
           // 连接已成功, 此时可通过 getConversationList 获取会话列表并展示
+          self.isConnected = true;
           self.joinChatRoom();
         },
         onTokenIncorrect: function () {
@@ -379,27 +521,128 @@ export default {
       });
     },
     joinChatRoom() {
+      let self = this;
       RongIMClient.getInstance().joinChatRoom(this.chat_id, 0, {
         onSuccess: function () {
           console.log('加入聊天室成功');
+          self.isEnterRoom = true;
+          self.networkForHistoryList();
         },
         onError: function (error) {
           console.log('加入聊天室失败', error);
         },
       });
     },
+    loadTop() {
+      if (this.canLoadMore) {
+        this.networkForHistoryList();
+      } else {
+        this.$refs.loadmore.onTopLoaded();
+        Toast({
+          message: '没有更多的数据',
+          position: 'top',
+          duration: 1500,
+        });
+      }
+    },
+    networkForHistoryList() {
+      let item = this.chat_data[0];
+      let para;
+      if (item) {
+        para = { uid: this.course_info.uid, messageUId: item.messageUId };
+        this.needScroll = false;
+      } else {
+        para = { uid: this.course_info.uid };
+        this.needScroll = true;
+      }
+      getChatHistory(para)
+        .then((res) => {
+          let dataCount = res.result.count;
+          let data = res.result.data;
+          if (data.length > 0) {
+            for (let index = 0; index < data.length; index++) {
+              let info = data[index];
+              let msg = Base64.decode(info.content.content);
+              let msgInfo = JSON.parse(msg);
+              let chatMessage = {
+                content: {
+                  content: msgInfo,
+                },
+                messageUId: info.messageUId,
+                objectName: info.objectName,
+                senderUserId: info.senderUserId,
+                sentTime: info.sentTime,
+                targetId: info.targetId,
+              };
+              this.chat_data.unshift(chatMessage);
+            }
+            this.canLoadMore = true;
+          } else {
+            this.canLoadMore = false;
+          }
+          this.$refs.loadmore.onTopLoaded();
+        })
+        .catch((rej) => {
+          this.$refs.loadmore.onTopLoaded();
+          this.catchError(rej);
+        });
+    },
+    networkForChatInfo() {
+      getChatRoomInfo(this.course_info)
+        .then((res) => {
+          this.chat_token = res.result.data.token;
+          this.chat_id = res.result.data.sdk_id;
+          this.rongYunConnect();
+        })
+        .catch((rej) => {
+          this.catchError(rej);
+        });
+    },
+    networkForSaveUser() {
+      console.log('networkForSaveUser');
+      this.$store
+        .dispatch('AddUser')
+        .then((resolve) => {
+          console.log('SET_USER', resolve);
+          console.log(this.userInfo.user_id, this.userInfo, 'aaa');
+          Indicator.close();
+        })
+        .catch((reject) => {
+          this.catchError(reject);
+        });
+    },
+    catchError(rej) {
+      console.log('catch3:', rej);
+      try {
+        if (rej.data.message) {
+          Toast(rej.data.message);
+        }
+      } catch (error) {
+        console.log('error0:', error);
+      }
+    },
   },
   beforeDestroy() {
-    RongIMClient.getInstance().quitChatRoom(this.chat_id, {
-      onSuccess: function () {
-        console.log('退出聊天室成功');
+    let self = this;
+    if (this.isEnterRoom) {
+      RongIMClient.getInstance().quitChatRoom(this.chat_id, {
+        onSuccess: function () {
+          console.log('退出聊天室成功');
+          self.isEnterRoom = false;
+          RongIMClient.getInstance().disconnect();
+          self.isConnected = false;
+          // RongIMClient.getInstance().logout();//disconnect();
+        },
+        onError: function (error) {
+          console.log('退出聊天室失败');
+        },
+      });
+    } else {
+      if (this.isConnected) {
         RongIMClient.getInstance().disconnect();
-        // RongIMClient.getInstance().logout();//disconnect();
-      },
-      onError: function (error) {
-        console.log('退出聊天室失败');
-      },
-    });
+        this.isConnected = false;
+      }
+    }
   },
 };
 </script>
@@ -423,39 +666,37 @@ hr {
   width: 100%;
   height: 0.5px;
 }
-.input-box1 {
+#input-tool {
+  width: 100%;
   background: white;
   position: absolute;
-  height: 50px;
-  width: 100%;
   left: 0px;
   bottom: 0px;
-  display: flex;
   border-top: 0.5px solid #ddd;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.input-box1 {
+  height: 50px;
 }
 .input-box2 {
-  background: white;
-  position: absolute;
   height: 84px;
+}
+#input-tool .tool-header {
+  margin-bottom: 10px;
+  padding: 0;
   width: 100%;
-  left: 0px;
-  bottom: 0px;
+  height: 50px;
   display: flex;
-  border-top: 0.5px solid #ddd;
 }
-.input-box1 .horizontal,
-.input-box2 .horizontal {
-  position: absolute;
-  top: 2px;
-  left: 0px;
-}
-.input-box1 #editor,
-.input-box2 #editor {
+.tool-header #editor {
   border-radius: 6px;
   border: 0.5px solid #edebec;
   background: #fbf9fa;
   height: 32px;
-  outline-style: none;
+  outline: none;
+  resize: none;
   display: flex;
   font-size: 15px;
   align-items: center;
@@ -464,20 +705,19 @@ hr {
   flex: 1;
   position: relative;
   padding-left: 10px;
+  padding-top: 10px;
 }
-.input-box1 #smile,
-.input-box2 #smile {
+.tool-header #smile {
   position: relative;
   /* display: inline-block; */
   width: 25px;
   height: 25px;
-  margin: 12px;
+  margin: 12px 0 12px 12px;
   border-width: 0;
   background: transparent;
   /* float: left; */
 }
-.input-box1 .send-btn,
-.input-box2 .send-btn {
+.tool-header .send-btn {
   position: relative;
   width: 55px;
   height: 32px;
@@ -485,5 +725,27 @@ hr {
   margin-right: 16px;
   margin-top: 8px;
   font-size: 14px;
+}
+#input-tool .tool-emoji {
+  width: 100%;
+}
+.content {
+  white-space: pre-line;
+}
+.questionDiv .questionContent {
+  white-space: pre-line;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s linear;
+  transform: translateY(0);
+}
+.fade-enter,
+.fade-leave-to {
+  transform: translateY(100%);
+}
+.fade-leave,
+.fade-enter-to {
+  transform: translateY(0%);
 }
 </style>

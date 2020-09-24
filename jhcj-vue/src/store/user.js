@@ -1,4 +1,4 @@
-import { login } from "../api/userApi";
+import { codeLogin, passwordLogin } from "../api/userApi";
 
 const user = {
   state: () => ({
@@ -36,9 +36,9 @@ const user = {
     }
   },
   actions: {
-    Login({ commit }, info) {
+    LoginCode({ commit }, info) {
       return new Promise((resolve, reject) => {
-        login(info)
+        codeLogin(info)
           .then(res => {
             const tokenStr = res.result.access_token;
             const refreshStr = res.result.refresh_token;
@@ -50,7 +50,20 @@ const user = {
             reject(rej);
           });
       });
-    }
+    },
+    LoginPassword({ commit }, info) {
+      return new Promise((resolve, reject) => {
+        passwordLogin(info).then(res => {
+          const tokenStr = res.result.access_token;
+          const refreshStr = res.result.refresh_token;
+          commit("SET_ACCESS_TOKEN", tokenStr);
+          commit("SET_REFRESH_TOKEN", refreshStr);
+          resolve(res);
+        }).catch(rej =>{
+          reject(rej);
+        })
+      })
+    },
   }
 };
 

@@ -1,14 +1,23 @@
 import request from "./request";
 import QS from "qs";
 
-//登录
-export function login(params) {
+//验证码登录
+export function codeLogin(params) {
   return request({
     url: "/app/v1/login/userLoginCode",
     method: "post",
     data: QS.stringify(params),
     needToken: false
   });
+}
+//密码登录
+export function passwordLogin(params) {
+  return request({
+    url: "/app/v1/login/userLogin",
+    method: "post",
+    data: QS.stringify(params),
+    needToken: false
+  })
 }
 //发送登录验证码
 export function loginMsgCode(params) {

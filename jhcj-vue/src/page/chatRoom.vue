@@ -5,16 +5,18 @@
                  class="header">
         <router-link to="/"
                      slot="left">
-          <mt-button icon="back"
-                     @click="backPage">
+          <mt-button @click="reload">
+            <img style="width:20px;height:20px"
+                 src="../assets/image/reload.png"
+                 alt="刷新">
           </mt-button>
         </router-link>
         <mt-button class="nav-right-btn"
                    slot="right"
                    @click="collect">
           <img style="width:20px;height:20px"
-               src="../assets/image/collection.png"
-               alt="" />
+               :src="isCollected ? require('../assets/image/collected.png') : require('../assets/image/collection.png')"
+               alt="收藏" />
         </mt-button>
       </mt-header>
     </div>
@@ -26,7 +28,11 @@
 
 <script>
 import liveChat from '../components/liveChat';
-import { getCourseMsg } from '../api/courseApi';
+import {
+  getCourseMsg,
+  keepTheCourse,
+  cancelKeepTheCourse,
+} from '../api/courseApi';
 import bus from '../common/bus';
 
 export default {
@@ -35,6 +41,7 @@ export default {
     return {
       title: '文字直播课',
       course_info: {},
+      isCollected: false,
     };
   },
   components: {
@@ -55,18 +62,29 @@ export default {
   methods: {
     networkForCourseInfo() {
       getCourseMsg(this.course_info)
-          .then((res) => {
-            let courseInfo = res.result.course;
-            if (courseInfo) {
-              this.title = courseInfo.course_head;
-            }
-          })
-          .catch((rej) => {});
+        .then((res) => {
+          let courseInfo = res.result.course;
+          if (courseInfo) {
+            this.title = courseInfo.course_head;
+          }
+        })
+        .catch((rej) => {});
     },
     collect() {
       if (this.haveLogin()) {
-        let access_token = localStorage.getItem('access_token');
-        console.log(access_token, '有token');
+        if (this.isCollected) {
+          cancelKeepTheCourse(this.course_info)
+            .then((res) => {
+              this.isCollected = false;
+            })
+            .catch((rej) => {});
+        } else {
+          keepTheCourse(this.course_info)
+            .then((res) => {
+              this.isCollected = true;
+            })
+            .catch((rej) => {});
+        }
       } else {
         bus.$emit('login', 'show-view');
       }
@@ -83,10 +101,10 @@ export default {
         return false;
       }
     },
-    backPage() {
-      console.log('aaaaa');
+    reload() {
+      location.reload();
     },
-  }
+  },
 };
 </script>
 
@@ -110,6 +128,6 @@ export default {
   width: 100%;
   overflow-y: hidden;
   /* height: 100%; */
-  height: calc(100vh - 40px);
+  height: calc(100% - 40px);
 }
 </style>

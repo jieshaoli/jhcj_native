@@ -24,20 +24,29 @@ export default {
     loginPage,
   },
   methods: {
-    hide_view() {
-      this.show_login = flase
-      let view = document.getElementById('hide_view')
+    // hide_view() {
+    //   this.show_login = flase
+    //   let view = document.getElementById('hide_view')
+    // },
+    networkForSaveUser() {
+      this.$store
+        .dispatch('AddUser')
+        .then((resolve) => {
+          console.log('SET_USER', resolve);
+        })
+        .catch((reject) => {});
     },
   },
   created() {
     bus.$on('login', (msg) => {
-      console.log(msg, 'show-login')
+      console.log(msg, 'show-login');
       if (msg == 'show-view') {
         this.show_login = true;
       }else if (msg == 'hide-view' || msg == 'success-todo') {
         this.show_login = false;
+        this.networkForSaveUser();
       }
-    })
+    });
   },
 }
 </script>
