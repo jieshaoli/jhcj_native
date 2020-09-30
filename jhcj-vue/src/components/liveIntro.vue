@@ -14,9 +14,6 @@ export default {
       required: true,
     },
   },
-  mounted() {
-    console.log('liveIntroUrl: ', this.liveIntroUrl);
-  },
 };
 </script>
 <style lang="css" scoped>

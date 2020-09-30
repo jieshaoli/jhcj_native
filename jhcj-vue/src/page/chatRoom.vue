@@ -3,14 +3,16 @@
     <div class="fixed-div">
       <mt-header :title=title
                  class="header">
-        <router-link to="/"
-                     slot="left">
-          <mt-button @click="reload">
-            <img style="width:20px;height:20px"
-                 src="../assets/image/reload.png"
-                 alt="刷新">
-          </mt-button>
-        </router-link>
+        <!-- <router-link to="/" -->
+        <!-- slot="left"> -->
+        <mt-button class="nav-left-btn"
+                   slot="left"
+                   @click="reload">
+          <img style="width:20px;height:20px"
+               src="../assets/image/reload.png"
+               alt="刷新">
+        </mt-button>
+        <!-- </router-link> -->
         <mt-button class="nav-right-btn"
                    slot="right"
                    @click="collect">
@@ -34,6 +36,7 @@ import {
   cancelKeepTheCourse,
 } from '../api/courseApi';
 import bus from '../common/bus';
+import { Toast } from 'mint-ui';
 
 export default {
   name: 'chatRoom',
@@ -68,7 +71,9 @@ export default {
             this.title = courseInfo.course_head;
           }
         })
-        .catch((rej) => {});
+        .catch((rej) => {
+          this.catchError(rej);
+        });
     },
     collect() {
       if (this.haveLogin()) {
@@ -77,13 +82,17 @@ export default {
             .then((res) => {
               this.isCollected = false;
             })
-            .catch((rej) => {});
+            .catch((rej) => {
+              this.catchError(rej);
+            });
         } else {
           keepTheCourse(this.course_info)
             .then((res) => {
               this.isCollected = true;
             })
-            .catch((rej) => {});
+            .catch((rej) => {
+              this.catchError(rej);
+            });
         }
       } else {
         bus.$emit('login', 'show-view');
@@ -103,6 +112,16 @@ export default {
     },
     reload() {
       location.reload();
+    },
+    catchError(rej) {
+      console.log('catch:', rej);
+      try {
+        if (rej.data.message) {
+          Toast(rej.data.message);
+        }
+      } catch (error) {
+        console.log('error:', error);
+      }
     },
   },
 };

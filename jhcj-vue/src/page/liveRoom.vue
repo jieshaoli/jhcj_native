@@ -3,12 +3,16 @@
     <div class="fixed-div">
       <mt-header :title=title
                  class="header">
-        <router-link to="/"
-                     slot="left">
-          <mt-button icon="back"
-                     @click="backPage">
-          </mt-button>
-        </router-link>
+        <!-- <router-link to="/" -->
+        <!-- slot="left"> -->
+        <mt-button class="nav-left-btn"
+                   slot="left"
+                   @click="reload">
+          <img style="width:20px;height:20px"
+               src="../assets/image/reload.png"
+               alt="刷新">
+        </mt-button>
+        <!-- </router-link> -->
         <mt-button class="nav-right-btn"
                    slot="right"
                    @click="collect">
@@ -36,32 +40,32 @@
       <div class="live-choose">
         <mt-navbar v-model="selected"
                    class="navbar">
-          <mt-tab-item id="简介">
+          <mt-tab-item id="intro">
             简介
           </mt-tab-item>
-          <mt-tab-item id="要点">
+          <mt-tab-item id="keys">
             要点
           </mt-tab-item>
-          <mt-tab-item id="交流">
+          <mt-tab-item id="chat">
             交流
           </mt-tab-item>
         </mt-navbar>
       </div>
     </div>
-    <div class="content">
+    <div class="live-content">
       <mt-tab-container v-model="selected"
                         :swipeable=true>
-        <mt-tab-container-item id="简介">
+        <mt-tab-container-item id="intro">
           <div class="content-box">
             <live-intro v-bind:liveIntroUrl="courseIntroUrl"></live-intro>
           </div>
         </mt-tab-container-item>
-        <mt-tab-container-item id="要点">
+        <mt-tab-container-item id="keys">
           <div class="content-box">
             <live-keys v-bind:course_id="course_id"></live-keys>
           </div>
         </mt-tab-container-item>
-        <mt-tab-container-item id="交流">
+        <mt-tab-container-item id="chat">
           <div class="content-box">
             <live-chat v-bind:course_info="course_info"></live-chat>
           </div>
@@ -75,7 +79,7 @@
 import liveChat from '../components/liveChat';
 import liveKeys from '../components/liveKeys';
 import liveIntro from '../components/liveIntro';
-import { MessageBox } from 'mint-ui';
+import { MessageBox, Toast } from 'mint-ui';
 import bus from '../common/bus';
 import {
   getCourseMsg,
@@ -96,7 +100,7 @@ export default {
     return {
       course_info: {},
       title: '直播课',
-      selected: '简介',
+      selected: 'intro',
       hlsUrl: '',
       flvUrl: '',
       liveDefaultImg: '',
@@ -110,10 +114,18 @@ export default {
     liveKeys,
     liveChat,
   },
+  /**
+   *
+mozilla/5.0 (iphone; cpu iphone os 13_1_3 like mac os x) applewebkit/605.1.15 (khtml, like gecko) version/13.0.1 mobile/15e148 safari/604.1" – "userPla" – "macintel"
+mozilla/5.0 (iphone; cpu iphone os 13_2_3 like mac os x) applewebkit/605.1.15 (khtml, like gecko) version/13.0.3 mobile/15e148 safari/604.1 userPla macintel
+mozilla/5.0 (macintosh; intel mac os x 10_15_6) applewebkit/537.36 (khtml, like gecko) chrome/85.0.4183.121 safari/537.36 userPla macintel
+mozilla/5.0 (windows nt 10.0; win64; x64; rv:81.0) gecko/20100101 firefox/81.0 userPla win32
+userAgent: mozilla/5.0 (linux; android 9; rvl-al09 build/huaweirvl-al09; wv) applewebkit/537.36 (khtml, like gecko) version/4.0 chrome/77.0.3865.120 mqqbrowser/6.2 tbs/045331 mobile safari/537.36 mmwebid/4680 micromessenger/7.0.19.1760(0x27001339) process/tools wechat/arm64 nettype/wifi language/zh_cn abi/arm64 userPla linux aarch64
+userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/605.1.15 (khtml, like gecko) mobile/15e148 micromessenger/7.0.15(0x17000f31) nettype/wifi language/zh_cn userPla iphone
+   */
   methods: {
     initLivePlayer() {
       let boxDiv = document.getElementById('mse');
-      //http://vfx.mtime.cn/Video/2019/02/04/mp4/190204084208765161.mp4
       if (this.ifAppleBrowser() == 'apple') {
         console.log('hls player');
         player = new HlsPlayer({
@@ -162,20 +174,21 @@ export default {
     },
     ifAppleBrowser() {
       var ualower = navigator.userAgent.toLocaleLowerCase();
-      console.log(ualower);
-      if (
-        (ualower.indexOf('iphone os') > -1 || ualower.indexOf('mac os') > -1) &&
-        ualower.indexOf('mobile') > -1
-      ) {
-        return 'apple';
-      } else {
-        return 'else';
+      var planfrom = navigator.platform.toLocaleLowerCase();
+      console.log('userAgent:', ualower, 'userPla', planfrom);
+      let type = 'apple';
+      if (planfrom.indexOf('iphone') > -1 && ualower.indexOf('iphone') > -1) {
+        type = 'apple';
       }
+      // else if(planfrom.indexOf('mac') > -1 && ualower.indexOf('iphone') > -1) {
+      //   type = 'apple';
+      // }
+      else{
+        type = 'else';
+      }
+      return type;
     },
     initRongYun() {},
-    backPage() {
-      console.log('aaaaa');
-    },
     collect() {
       if (this.haveLogin()) {
         this.networkForIfKeepCourse();
@@ -196,7 +209,6 @@ export default {
       }
     },
     networkForLiveInfo() {
-      // if (this.haveLogin()) {
       getCourseMsg(this.course_info)
         .then((res) => {
           let courseInfo = res.result.course;
@@ -214,30 +226,48 @@ export default {
               bg.style.backgroundImage = 'url(' + this.liveDefaultImg + ')';
             }
             if (this.hlsUrl.length > 1 && this.flvUrl.length > 1) {
-              // setTimeout(() => {
-              //   this.initLivePlayer()
-              // }, 500)
+              setTimeout(() => {
+                this.initLivePlayer();
+              }, 500);
             }
           }
         })
-        .catch((rej) => {});
-      // }
+        .catch((rej) => {
+          this.catchError(rej);
+        });
     },
-    networkForIfKeepCourse:  _throttling(function() {
+    networkForIfKeepCourse: _throttling(function () {
       if (this.isCollected) {
         cancelKeepTheCourse(this.course_info)
           .then((res) => {
             this.isCollected = false;
           })
-          .catch((rej) => {});
+          .catch((rej) => {
+            this.catchError(rej);
+          });
       } else {
         keepTheCourse(this.course_info)
           .then((res) => {
             this.isCollected = true;
           })
-          .catch((rej) => {});
+          .catch((rej) => {
+            this.catchError(rej);
+          });
       }
     }, 1500),
+    reload() {
+      location.reload();
+    },
+    catchError(rej) {
+      console.log('catch:', rej);
+      try {
+        if (rej.data.message) {
+          Toast(rej.data.message);
+        }
+      } catch (error) {
+        console.log('error:', error);
+      }
+    },
   },
   created() {
     var hrefStr = window.location.href;
@@ -247,14 +277,24 @@ export default {
         type: 2,
         uid: id,
       };
-      this.course_id = this.course_info.uid;
       console.log('liveRoom id = ', id);
       this.networkForLiveInfo();
     } else {
-      MessageBox.alert('课程出现错误', '出错');
+      MessageBox.alert('课程出现错误,请输入正确网址', '出错');
     }
   },
-  mounted() {},
+  mounted() {
+    let liveContent = document.getElementsByClassName('live-content')[0];
+    let contentBoxes = document.getElementsByClassName('content-box');
+    console.log(liveContent,'liveContent.height:',contentBoxes);
+    for (let index = 0; index < contentBoxes.length; index++) {
+      let contentBox = contentBoxes[index];
+      contentBox.style.height = liveContent.offsetHeight + 'px';
+    }
+  },
+  beforeDestroy() {
+    player.destroy(true);
+  },
   destroyed() {
     player.destroy(true);
   },
@@ -332,18 +372,16 @@ export default {
   text-align: center;
 }
 
-#live-room .content {
+#live-room .live-content {
   position: fixed;
   top: 305px;
   /* margin-top: 300px; */
   width: 100%;
   background: white;
-  height: 100%;
+  height: calc(100% - 305px);
 }
 #live-room .content-box {
   width: 100%;
   overflow-y: hidden;
-  /* height: 100%; */
-  height: calc(100% - 305px);
 }
 </style>

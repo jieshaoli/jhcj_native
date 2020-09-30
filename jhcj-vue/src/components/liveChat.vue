@@ -152,7 +152,7 @@ import { getChatRoomInfo, getChatHistory } from '../api/courseApi';
 import { mapGetters } from 'vuex';
 import { Base64 } from 'js-base64';
 import emojiView from './emojiView.vue';
-import { Toast, Loadmore, Indicator } from 'mint-ui';
+import { Toast, Loadmore, Indicator, MessageBox } from 'mint-ui';
 
 export default {
   name: 'liveChat',
@@ -195,7 +195,7 @@ export default {
           this.networkForSaveUser();
         }
       }
-    })
+    });
   },
   updated() {
     this.updateScroll();
@@ -441,6 +441,17 @@ export default {
                     self.needScroll = true;
                     self.chat_data.push(chatMessage);
                   }
+                } else if (msgInfo.info_type == 11) {
+                  if (msgInfo.info.status == 3) {
+                    console.log('课程已结束');
+                    MessageBox.alert(
+                      '直播课堂已结束，查看更多内容请下载：君汇财经app',
+                      '直播结束!'
+                    ).then((action) => {
+                      location.href =
+                        'https://app.1yuaninfo.com/app_web/Download.html';
+                    });
+                  }
                 }
               }
               break;
@@ -592,6 +603,7 @@ export default {
         .then((res) => {
           this.chat_token = res.result.data.token;
           this.chat_id = res.result.data.sdk_id;
+          bus.$emit('getChatInfo_sdk_id', this.chat_id);
           this.rongYunConnect();
         })
         .catch((rej) => {
@@ -608,17 +620,18 @@ export default {
           Indicator.close();
         })
         .catch((reject) => {
+          Indicator.close();
           this.catchError(reject);
         });
     },
     catchError(rej) {
-      console.log('catch3:', rej);
+      console.log('catch:', rej);
       try {
         if (rej.data.message) {
           Toast(rej.data.message);
         }
       } catch (error) {
-        console.log('error0:', error);
+        console.log('error:', error);
       }
     },
   },

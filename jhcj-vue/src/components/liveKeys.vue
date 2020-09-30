@@ -23,61 +23,64 @@
 <script>
 import { getLiveKeyPoints } from '@/api/courseApi.js';
 import bus from '../common/bus';
+import { Toast } from 'mint-ui';
 
 export default {
   name: 'liveKeys',
-  props: {
-    course_id: {
-      type: String,
-      required: true,
-    },
-  },
+  // props: {
+  //   course_id: {
+  //     type: String,
+  //     required: true,
+  //   },
+  // },
   data() {
     return {
       keysInfo: [],
+      currentPage: 1,
+      course_id: '',
     };
   },
   created() {
-    for (var i in [1, 2, 3, 4, 5, 6]) {
-      let element = {
-        ctime: new Date().getTime() + '',
-        contentStr:
-          '龙头股通常在大盘下跌末期端，市场恐慌时，逆市涨停，提前见底，或者先于大盘启动，并且经受大盘一轮下跌考验。再如12月2日出现的新龙头太原刚玉，它符合刚讲的龙头战法。',
-      };
-      this.keysInfo.push(element);
-    }
-    bus.$on('login', (msg) => {
-      if (msg == 'success-todo') {
-        this.keysInfo = [];
-        this.networkForKeyPoints();
-      }
-    });
     bus.$on('liveKeyPoints', (msg) => {
       console.log(JSON.stringify(msg));
       let element = {
         ctime: msg.info_time,
         contentStr: msg.info.content,
       };
-      this.keysInfo.push(element);
+      this.keysInfo.unshift(element);
     });
+    bus.$on('getChatInfo_sdk_id', (msg) => {
+      this.course_id = msg;
+      if (this.course_id && this.course_id.length > 0) {
+        this.networkForKeyPoints();
+      }
+    })
     if (this.haveLogin()) {
-      this.networkForKeyPoints();
+      if (this.course_id && this.course_id.length > 0) {
+        this.networkForKeyPoints();
+      }
     }
   },
   methods: {
     networkForKeyPoints() {
-      getLiveKeyPoints({ course_id: this.course_id })
+      this.keysInfo = [];
+      console.log('keypoints:', this.course_id);
+      getLiveKeyPoints({course_id: this.course_id, page: this.currentPage})
         .then((res) => {
           let data = res.result.data;
           data.forEach((info) => {
+            let msg = Base64.decode(info);
+            let msgInfo = JSON.parse(msg);
             let element = {
-              ctime: info.info_time,
-              contentStr: info.info.content,
+              ctime: msgInfo.info_time,
+              contentStr: msgInfo.info.content,
             };
             this.keysInfo.push(element);
           });
         })
-        .catch((rej) => {});
+        .catch((rej) => {
+          this.catchError(rej);
+        });
     },
     haveLogin() {
       let access_token = localStorage.getItem('access_token');
@@ -90,6 +93,16 @@ export default {
         return true;
       } else {
         return false;
+      }
+    },
+    catchError(rej) {
+      console.log('catch:', rej);
+      try {
+        if (rej.data.message) {
+          Toast(rej.data.message);
+        }
+      } catch (error) {
+        console.log('error:', error);
       }
     },
   },
