@@ -31,7 +31,8 @@
 <script>
 import liveChat from '../components/liveChat';
 import {
-  getCourseMsg,
+  getCourseMsgUnLogin,
+  getCourseMsgLogin,
   keepTheCourse,
   cancelKeepTheCourse,
 } from '../api/courseApi';
@@ -44,6 +45,7 @@ export default {
     return {
       title: '文字直播课',
       course_info: {},
+      isLogined: false,
       isCollected: false,
     };
   },
@@ -59,21 +61,58 @@ export default {
         uid: id,
       };
       console.log('chatRoom id = ', id);
+      this.haveLogin();
+      bus.$on('login', (msg) => {
+        if (msg == 'success-todo') {
+          if (this.isLogined == false) {
+            this.isLogined = true;
+            this.networkForCourseInfo();
+          }
+        }
+      });
       this.networkForCourseInfo();
     }
   },
   methods: {
+    haveLogin() {
+      let access_token = localStorage.getItem('access_token');
+      if (
+        access_token != null &&
+        access_token != undefined &&
+        access_token.length > 1
+      ) {
+        this.isLogined = true;
+        return true;
+      } else {
+        this.isLogined = false;
+        return false;
+      }
+    },
     networkForCourseInfo() {
-      getCourseMsg(this.course_info)
-        .then((res) => {
-          let courseInfo = res.result.course;
-          if (courseInfo) {
-            this.title = courseInfo.course_head;
-          }
-        })
-        .catch((rej) => {
-          this.catchError(rej);
-        });
+      if (this.isLogined) {
+        getCourseMsgLogin(this.course_info)
+          .then((res) => {
+            let courseInfo = res.result.course;
+            if (courseInfo) {
+              this.title = courseInfo.course_head;
+              this.isCollected = courseInfo.is_collection == 1 ? true : false;
+            }
+          })
+          .catch((rej) => {
+            this.catchError(rej);
+          });
+      } else {
+        getCourseMsgUnLogin(this.course_info)
+          .then((res) => {
+            let courseInfo = res.result.course;
+            if (courseInfo) {
+              this.title = courseInfo.course_head;
+            }
+          })
+          .catch((rej) => {
+            this.catchError(rej);
+          });
+      }
     },
     collect() {
       if (this.haveLogin()) {

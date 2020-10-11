@@ -82,7 +82,8 @@ import liveIntro from '../components/liveIntro';
 import { MessageBox, Toast } from 'mint-ui';
 import bus from '../common/bus';
 import {
-  getCourseMsg,
+  getCourseMsgUnLogin,
+  getCourseMsgLogin,
   keepTheCourse,
   cancelKeepTheCourse,
 } from '../api/courseApi';
@@ -106,6 +107,7 @@ export default {
       liveDefaultImg: '',
       courseIntroUrl: '',
       course_id: '',
+      isLogined: false,
       isCollected: false,
     };
   },
@@ -183,7 +185,7 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
       // else if(planfrom.indexOf('mac') > -1 && ualower.indexOf('iphone') > -1) {
       //   type = 'apple';
       // }
-      else{
+      else {
         type = 'else';
       }
       return type;
@@ -203,38 +205,58 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
         access_token != undefined &&
         access_token.length > 1
       ) {
+        this.isLogined = true;
         return true;
       } else {
+        this.isLogined = false;
         return false;
       }
     },
     networkForLiveInfo() {
-      getCourseMsg(this.course_info)
-        .then((res) => {
-          let courseInfo = res.result.course;
-          if (courseInfo) {
-            this.title = courseInfo.course_head;
-            this.hlsUrl = courseInfo.hls_pull_url;
-            this.flvUrl = courseInfo.http_pull_url;
-            this.liveDefaultImg = courseInfo.course_picture;
-            this.courseIntroUrl = courseInfo.synopsis_url;
-            if (
-              this.liveDefaultImg.length > 1 &&
-              typeof this.liveDefaultImg == 'string'
-            ) {
-              var bg = document.getElementById('videoBg');
-              bg.style.backgroundImage = 'url(' + this.liveDefaultImg + ')';
+      if (this.isLogined) {
+        getCourseMsgLogin(this.course_info)
+          .then((res) => {
+            let courseInfo = res.result.course;
+            if (courseInfo) {
+              this.title = courseInfo.course_head;
+              this.isCollected = courseInfo.is_collection == 1 ? true : false;
+              this.hlsUrl = courseInfo.hls_pull_url;
+              this.flvUrl = courseInfo.http_pull_url;
+              this.liveDefaultImg = courseInfo.course_picture;
+              this.courseIntroUrl = courseInfo.synopsis_url;
             }
-            if (this.hlsUrl.length > 1 && this.flvUrl.length > 1) {
-              setTimeout(() => {
-                this.initLivePlayer();
-              }, 500);
+          })
+          .catch((rej) => {
+            this.catchError(rej);
+          });
+      } else {
+        getCourseMsgUnLogin(this.course_info)
+          .then((res) => {
+            let courseInfo = res.result.course;
+            if (courseInfo) {
+              this.title = courseInfo.course_head;
+              this.hlsUrl = courseInfo.hls_pull_url;
+              this.flvUrl = courseInfo.http_pull_url;
+              this.liveDefaultImg = courseInfo.course_picture;
+              this.courseIntroUrl = courseInfo.synopsis_url;
+              if (
+                this.liveDefaultImg.length > 1 &&
+                typeof this.liveDefaultImg == 'string'
+              ) {
+                var bg = document.getElementById('videoBg');
+                bg.style.backgroundImage = 'url(' + this.liveDefaultImg + ')';
+              }
+              if (this.hlsUrl.length > 1 && this.flvUrl.length > 1) {
+                setTimeout(() => {
+                  this.initLivePlayer();
+                }, 500);
+              }
             }
-          }
-        })
-        .catch((rej) => {
-          this.catchError(rej);
-        });
+          })
+          .catch((rej) => {
+            this.catchError(rej);
+          });
+      }
     },
     networkForIfKeepCourse: _throttling(function () {
       if (this.isCollected) {
@@ -278,6 +300,15 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
         uid: id,
       };
       console.log('liveRoom id = ', id);
+      this.haveLogin();
+      bus.$on('login', (msg) => {
+        if (msg == 'success-todo') {
+          if (this.isLogined == false) {
+            this.isLogined = true;
+            this.networkForLiveInfo();
+          }
+        }
+      });
       this.networkForLiveInfo();
     } else {
       MessageBox.alert('课程出现错误,请输入正确网址', '出错');
@@ -286,7 +317,6 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
   mounted() {
     let liveContent = document.getElementsByClassName('live-content')[0];
     let contentBoxes = document.getElementsByClassName('content-box');
-    console.log(liveContent,'liveContent.height:',contentBoxes);
     for (let index = 0; index < contentBoxes.length; index++) {
       let contentBox = contentBoxes[index];
       contentBox.style.height = liveContent.offsetHeight + 'px';

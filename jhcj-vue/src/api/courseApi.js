@@ -2,13 +2,23 @@ import request from './request';
 import QS from 'qs';
 
 //获取课堂信息
-export function getCourseMsg(params) {
+export function getCourseMsgUnLogin(params) {
    return request({
     url: '/app/v2/course/room/message',
     method: 'post',
     data: QS.stringify(params),
     needToken: false,
   });
+}
+
+//登录后获取课堂信息
+export function getCourseMsgLogin(params) {
+  return request({
+    url: '/app/v2/course/user/room/message',
+    method: 'post',
+    data: QS.stringify(params),
+    needToken: true
+  })
 }
 
 //登录后获取聊天室信息

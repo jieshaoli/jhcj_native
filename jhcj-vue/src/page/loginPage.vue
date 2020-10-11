@@ -56,7 +56,6 @@
 import bus from '../common/bus';
 import inputGroup from '../components/inputGroup';
 import { Toast } from 'mint-ui';
-import { getCourseMsg } from '../api/courseApi';
 import { loginMsgCode } from '../api/userApi';
 import { mapState } from 'vuex';
 
