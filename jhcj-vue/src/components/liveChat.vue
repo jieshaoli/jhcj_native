@@ -1,11 +1,12 @@
 <template>
   <div id="live-chat">
-    <mt-loadmore :top-method="loadTop"
-                 ref="loadmore"
-                 class="load-more">
-      <div class="lite-chatbox"
-           :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
-           @click.stop="inputBlur">
+
+    <div class="lite-chatbox"
+         :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
+         @click.stop="inputBlur">
+      <mt-loadmore :top-method="loadTop"
+                   ref="loadmore"
+                   class="load-more">
         <ul>
           <li v-for="(item, index) in chat_data"
               :key="index">
@@ -112,8 +113,9 @@
             </div>
           </li>
         </ul>
-      </div>
-    </mt-loadmore>
+      </mt-loadmore>
+    </div>
+
     <div :class="if_more_x ? 'input-box2' : 'input-box1'"
          id="input-tool">
       <div class="tool-header">
@@ -286,6 +288,7 @@ export default {
         input.blur();
       }
     },
+    setUserInfo() {},
     judgeToLogin() {
       if (this.haveLogin()) {
         if (this.userInfo.user_id == '' || this.userInfo.user_id == undefined) {
@@ -613,7 +616,7 @@ export default {
         this.networkForHistoryList();
       } else {
         this.$refs.loadmore.onTopLoaded();
-        self.warningToast('没有更多的数据');
+        this.warningToast('没有更多的数据');
       }
     },
     networkForHistoryList() {
@@ -739,12 +742,11 @@ export default {
   height: 100%;
   overflow: auto;
 }
-#live-chat >>> .mint-loadmore-content {
+/* #live-chat >>> .mint-loadmore-content {
   height: 100%;
   width: 100%;
-}
+} */
 .load-more {
-  height: 100%;
   width: 100%;
 }
 #lite-chat-box1 {

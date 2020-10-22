@@ -16,7 +16,6 @@ const mutations = {
     state.test = msg;
   },
   CLEAR_USER(state) {
-    console.log('这里能打印么？');
     state.user.user_id = "";
     state.user_id = "";
     state.user_name = "";

@@ -51,7 +51,6 @@ export default {
         this.networkForSaveUser();
       }
     });
-    bus.$on('getUser',)
   },
 };
 </script>

@@ -65,6 +65,7 @@ import inputGroup from '../components/inputGroup';
 import { Toast } from 'mint-ui';
 import { loginMsgCode } from '../api/userApi';
 import { mapState } from 'vuex';
+import { Base64 } from 'js-base64';
 import axios from 'axios';
 
 export default {
@@ -112,21 +113,50 @@ export default {
       console.log('hrefStr:', hrefStr);
       if (hrefStr.indexOf('platform') > -1) {
         this.platform = hrefStr.split('platform=')[1].split('&')[0];
-        if (!this.$haveLogin()) {
-          if (this.platform == 'wxf1dae2ba24e9eaae') {
-
-            if (hrefStr.indexOf('code') > -1) {
-              console.log('未登录，转公众号内部打开，用code去登录');
-              let severNeedCode = hrefStr.split('code=')[1].split('&')[0] + '';
-              if (severNeedCode) {
-                let config = {
-                  headers: {
-                    'Content-Type': 'multipart/form-data',
-                  },
-                };
-                let params = new FormData();
-                params.append('code', severNeedCode);
-                console.log('code: ', severNeedCode);
+        if (this.platform == 'wxf1dae2ba24e9eaae') {
+          if (hrefStr.indexOf('code') > -1) {
+            let severNeedCode = hrefStr.split('code=')[1].split('&')[0] + '';
+            if (severNeedCode && severNeedCode.length > 0) {
+              let config = {
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                },
+              };
+              let params = new FormData();
+              params.append('code', severNeedCode);
+              console.log('code: ', severNeedCode);
+              if (this.$haveLogin()) {
+                console.log('公众号： 已登录了接着去拿openid');
+                params.append('status', 1);
+                axios
+                  .post(
+                    'http://z.1yuaninfo.com/index/chat/getUsersInfo',
+                    params,
+                    config
+                  )
+                  .then((res) => {
+                    console.log('code 上传成功', res);
+                    if (res.data.error_code) {
+                      Toast({
+                        title: res.data.msg,
+                        position: 'center',
+                        duration: 2000,
+                      });
+                    }
+                    if (res.data) {
+                      if (res.data.code == 200) {
+                        if (res.data.result.length > 0) {
+                          this.openId = Base64.decode(res.data.result);
+                        }
+                      }
+                    }
+                  })
+                  .catch((rej) => {
+                    console.log('code 上传失败', rej);
+                    this.$catchError(rej);
+                  });
+              } else {
+                console.log('未登录，转公众号内部打开，用code去登录');
                 axios
                   .post(
                     'http://z.1yuaninfo.com/index/chat/getUsersInfo',
@@ -170,10 +200,14 @@ export default {
               window.location.href =
                 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf1dae2ba24e9eaae&redirect_uri=http%3A%2F%2Fz.1yuaninfo.com%2Findex%2Fchat%2Froom.html&response_type=code&scope=snsapi_base&state=123#wechat_redirect';
             }
+          } else {
+            console.log('此时为公众号分享出去的，需要再次跳转');
+            window.location.href =
+              'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf1dae2ba24e9eaae&redirect_uri=http%3A%2F%2Fz.1yuaninfo.com%2Findex%2Fchat%2Froom.html&response_type=code&scope=snsapi_base&state=123#wechat_redirect';
           }
-        } else {
-          console.log('已经登录了');
         }
+      } else {
+        console.log('没有platform, app');
       }
     },
     selecet(msg) {
@@ -215,7 +249,7 @@ export default {
           axios
             .post('http://z.1yuaninfo.com/index/chat/send', params, config)
             .then((res) => {
-              console.log('chat/send', res);
+              console.log('chat/send:res', res);
               if (res.data.error_code) {
                 Toast({
                   title: res.data.msg,
@@ -234,7 +268,7 @@ export default {
               }
             })
             .catch((rej) => {
-              console.log('chat/send', rej);
+              console.log('chat/send:rej', rej);
               this.$catchError(rej);
             });
         }
@@ -286,9 +320,9 @@ export default {
                 position: 'center',
                 duration: 2000,
               });
+              bus.$emit('login', 'success-todo');
               this.phone = '';
               this.verifyCode = '';
-              bus.$emit('login', 'success-todo');
             })
             .catch((reject) => {
               if (reject.data.message) {

@@ -47,7 +47,7 @@ export default {
   name: 'chatRoom',
   data() {
     return {
-      title: '文字直播课',
+      title: '',
       course_info: {},
       courseAllData: {},
       isLogined: false,
@@ -64,9 +64,7 @@ export default {
   created() {
     var hrefStr = window.location.href;
     this.checkHref(hrefStr);
-    if (!this.haveLogin()) {
-      bus.$emit('login', 'show-view');
-    }
+    this.haveLogin();
     bus.$on('login', (msg) => {
       if (msg == 'success-todo') {
         console.log('新登录成功了');
@@ -93,11 +91,6 @@ export default {
         // 必填，把要使用的方法名放到这个数组中。
         jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData'],
       });
-      console.log(
-        this.courseAllData,
-        '====data====',
-        this.courseAllData.course_picture
-      );
       wx.ready(() => {
         var AppMessageShareData = {
           title: this.title, // 分享到朋友标题
@@ -133,11 +126,9 @@ export default {
         };
         wx.updateAppMessageShareData(AppMessageShareData); //分享到朋友
         wx.updateTimelineShareData(TimelineShareData); //分享到朋友圈
-        Indicator.close();
       });
       wx.error((res) => {
         console.log('wx error:', res);
-        Indicator.close();
       });
     },
     haveLogin() {
@@ -170,6 +161,12 @@ export default {
         if (this.platform && this.platform.length > 0) {
           if (this.platform == 'wxf1dae2ba24e9eaae') {
             document.getElementsByTagName('title')[0].innerText = '服务笔记';
+            if (hrefStr.indexOf('code') == -1) {
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('refresh_token');
+              this.isLogined = false;
+              this.$store.commit('CLEAR_USER');
+            }
           }
         } else if (this.platform == 'app') {
           document.getElementsByTagName('title')[0].innerText = '君汇财经';
@@ -198,7 +195,6 @@ export default {
               position: 'center',
               duration: 2000,
             });
-            Indicator.close();
           }
           if (res.data) {
             if (res.data.result.length > 0) {
@@ -206,14 +202,11 @@ export default {
               if (this.courseAllData && this.courseAllData != {}) {
                 this.wxShare();
               }
-            } else {
-              Indicator.close();
             }
           }
         })
         .catch((rej) => {
           console.log('GetSignature', rej);
-          Indicator.close();
           this.$catchError(rej);
         });
     },
@@ -224,10 +217,15 @@ export default {
             let courseInfo = res.result.course;
             if (courseInfo) {
               this.courseAllData = courseInfo;
-              // if (this.platform == 'wxf1dae2ba24e9eaae') {
-              Indicator.open('Loading...');
-              this.networkForGetSignature();
-              // }
+              if (
+                this.platform == 'wxf1dae2ba24e9eaae' &&
+                window.location.href.indexOf('code') == -1
+              ) {
+                console.log('公众号分享出去');
+              } else {
+                this.networkForGetSignature();
+              }
+
               this.title = courseInfo.course_head;
               this.isCollected = courseInfo.is_collection == 1 ? true : false;
               if (
@@ -262,10 +260,14 @@ export default {
             let courseInfo = res.result.course;
             if (courseInfo) {
               this.courseAllData = courseInfo;
-              // if (this.platform == 'wxf1dae2ba24e9eaae') {
-              Indicator.open('Loading...');
-              this.networkForGetSignature();
-              // }
+              if (
+                this.platform == 'wxf1dae2ba24e9eaae' &&
+                window.location.href.indexOf('code') == -1
+              ) {
+                console.log('公众号分享出去');
+              } else {
+                this.networkForGetSignature();
+              }
               this.title = courseInfo.course_head;
               if (
                 courseInfo.course_status == 1 ||
@@ -290,7 +292,7 @@ export default {
         });
     },
     collect() {
-      if (this.haveLogin()) {
+      if (this.$haveLogin()) {
         if (this.isCollected) {
           cancelKeepTheCourse(this.course_info)
             .then((res) => {
