@@ -6,12 +6,14 @@ import router from "./router";
 import Mint from "mint-ui";
 import store from "./store/store";
 import VConsole from "vconsole";
+import globalFunc from "./plugin/globalFunc.js";
 import "mint-ui/lib/style.css";
 import "./assets/css/litewebchat.css";
 
 let vConsole = new VConsole();
 
 Vue.use(Mint);
+Vue.use(globalFunc);
 Vue.config.productionTip = false;
 // Vue.config.prototype.$http = axios
 /* eslint-disable no-new */

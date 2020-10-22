@@ -1,5 +1,7 @@
 import axios from "axios";
 import _setting from "../common/setting";
+import store from "../store/store.js";
+import bus from "../common/bus.js"
 
 let access_token = "";
 const ax = axios.create({
@@ -55,6 +57,8 @@ ax.interceptors.response.use(
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         access_token = '';
+        bus.$emit('access_token_fail');
+        store.commit('CLEAR_USER');
       }
       return Promise.reject(response);
     }

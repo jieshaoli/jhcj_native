@@ -1,10 +1,11 @@
 <template>
   <div id="live-chat">
-    <div class="lite-chatbox"
-         :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
-         @click.stop="inputBlur">
-      <mt-loadmore :top-method="loadTop"
-                   ref="loadmore">
+    <mt-loadmore :top-method="loadTop"
+                 ref="loadmore"
+                 class="load-more">
+      <div class="lite-chatbox"
+           :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
+           @click.stop="inputBlur">
         <ul>
           <li v-for="(item, index) in chat_data"
               :key="index">
@@ -14,7 +15,7 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
-              <span class="time">{{ item.content.content.info_time | showTime }}</span>
+              <span class="time">{{ item.sentTime | showTime }}</span>
               <span class="name">{{ item.content.content.user.user_name }}</span><br>
               <span class="content">{{ item.content.content.info.content }}</span>
             </div>
@@ -25,7 +26,7 @@
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
-              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content">{{ item.content.content.info.content }}</span>
             </div>
             <div class="cleft cmsg"
@@ -35,7 +36,7 @@
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
-              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"><img :src="item.content.content.info.image_url" /></span>
             </div>
             <div class="cleft cmsg"
@@ -45,7 +46,7 @@
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
-              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content">这是播放音频的</span>
             </div>
             <div class="cleft cmsg"
@@ -55,7 +56,7 @@
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
-              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content">{{ item.content.content.info.content }}<br /><img :src="item.content.content.info.image_url" /></span>
             </div>
             <div class="cleft cmsg"
@@ -65,7 +66,7 @@
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
-              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content">
                 <div class="questionDiv">
                   <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
@@ -82,7 +83,7 @@
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
-              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content">
                 <div class="questionDiv">
                   <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
@@ -99,7 +100,7 @@
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
-              <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
+              <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content">
                 <div class="questionDiv">
                   <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
@@ -111,9 +112,8 @@
             </div>
           </li>
         </ul>
-      </mt-loadmore>
-    </div>
-
+      </div>
+    </mt-loadmore>
     <div :class="if_more_x ? 'input-box2' : 'input-box1'"
          id="input-tool">
       <div class="tool-header">
@@ -148,11 +148,11 @@
 <script>
 import _setting from '../common/setting';
 import bus from '../common/bus';
-import { getChatRoomInfo, getChatHistory } from '../api/courseApi';
+import { getChatHistory } from '../api/courseApi';
 import { mapGetters } from 'vuex';
 import { Base64 } from 'js-base64';
 import emojiView from './emojiView.vue';
-import { Toast, Loadmore, Indicator, MessageBox } from 'mint-ui';
+import { Toast, Loadmore, MessageBox } from 'mint-ui';
 
 export default {
   name: 'liveChat',
@@ -179,6 +179,14 @@ export default {
       canLoadMore: true,
       needScroll: true,
       scrollH: 0,
+      userInfo: {
+        user_id: '',
+        user_name: '',
+        user_photo: '',
+        user_role: 2,
+      },
+      checkerId: '',
+      ifNeedCheck: true,
     };
   },
   mounted() {
@@ -188,10 +196,20 @@ export default {
     } else {
       this.if_more_x = false;
     }
+    if (
+      this.$store.state.user.user_name &&
+      this.$store.state.user.user_name.length > 0
+    ) {
+      this.userInfo = {
+        user_id: 'junhui#' + this.$store.state.user.user_phone,
+        user_name: this.$store.state.user.user_name,
+        user_photo: this.$store.state.user.user_photo,
+        user_role: 2,
+      };
+    }
     this.$nextTick(() => {
       if (this.haveLogin()) {
         if (this.userInfo.user_id == '' || this.userInfo.user_id == undefined) {
-          Indicator.open('Loading...');
           this.networkForSaveUser();
         }
       }
@@ -202,22 +220,30 @@ export default {
   },
   computed: {
     ...mapGetters({
-      userInfo: 'user',
+      user: 'user',
     }),
   },
-  created() {
-    if (this.haveLogin()) {
-      this.networkForChatInfo();
-    }
-    bus.$on('login', (msg) => {
-      if (msg == 'success-todo') {
-        this.networkForChatInfo();
+  watch: {
+    user: function (val, oldValue) {
+      if (val.user_name && val.user_name.length > 0) {
+        this.userInfo = {
+          user_id: 'junhui#' + val.user_phone,
+          user_name: val.user_name,
+          user_photo: val.user_photo,
+          user_role: 2,
+        };
       }
+    },
+  },
+  created() {
+    bus.$on('getChatInfo_sdk_id', (msg) => {
+      this.chat_token = msg.token;
+      this.chat_id = msg.sdk_id;
+      this.ifNeedCheck = msg.is_examine_room == 1 ? true : false;
+      this.checkerId = msg.send_examine_id;
+      this.rongYunConnect();
     });
     this.initChatRoomSDK();
-    // setTimeout(() => {
-    //   console.log('user:',this.userInfo.user_id);//刷新之后加下延迟获取store
-    // }, 200);
   },
   methods: {
     showEmoji() {
@@ -267,12 +293,12 @@ export default {
             this.$store.state.user.user_id &&
             this.$store.state.user.user_id.length > 0
           ) {
-            this.userInfo.user_id = this.$store.state.user.user_id;
+            this.userInfo.user_id =
+              'junhui#' + this.$store.state.user.user_phone;
             this.userInfo.user_name = this.$store.state.user.user_name;
             this.userInfo.user_photo = this.$store.state.user.user_photo;
             this.userInfo.user_role = this.$store.state.user.user_role;
           } else {
-            Indicator.open('Loading...');
             this.networkForSaveUser();
           }
         }
@@ -314,20 +340,50 @@ export default {
       if (textContent.length > 0) {
         infoC = { content: textContent };
       } else {
-        Toast('请输入内容再发送');
+        this.warningToast('请输入内容再发送');
         return;
       }
       let data = {
         info_type: 1,
         info: infoC,
         info_time: currentTime + '',
+        target_id: this.chat_id,
         user: this.userInfo,
       };
-      this.sendToRongIM(data);
+      if (this.ifNeedCheck) {
+        this.sendToRongIMSolo(data);
+      } else {
+        this.sendToRongIM(data);
+      }
 
       this.input_text = '';
     },
+    sendToRongIMSolo(data) {
+      console.log(data, 'data');
+      let contentStr = JSON.stringify(data);
+      let base64Str = Base64.encode(contentStr);
+      let msg = new RongIMLib.TextMessage({ content: base64Str });
+      let conversationType = RongIMLib.ConversationType.PRIVATE;
+      let targetId = this.checkerId;
+      let self = this;
+      RongIMClient.getInstance().sendMessage(conversationType, targetId, msg, {
+        onSuccess: function (message) {
+          // message 为发送的消息对象并且包含服务器返回的消息唯一 id 和发送消息时间戳
+          console.log('发送文本消息成功', message);
+          self.addDataForShow(data, message);
+        },
+        onError: function (errorCode) {
+          console.log('发送消息失败', errorCode);
+          if (errorCode == '23408') {
+            self.errorToast('发送消息失败:您被管理员禁言了！');
+          } else {
+            self.errorToast('发送消息失败:' + errorCode);
+          }
+        },
+      });
+    },
     sendToRongIM(data) {
+      console.log(data, 'data');
       let contentStr = JSON.stringify(data);
       let base64Str = Base64.encode(contentStr);
       let msg = new RongIMLib.TextMessage({ content: base64Str });
@@ -338,23 +394,31 @@ export default {
         onSuccess: function (message) {
           // message 为发送的消息对象并且包含服务器返回的消息唯一 id 和发送消息时间戳
           console.log('发送文本消息成功', message);
-          let chatMessage = {
-            content: {
-              content: data,
-            },
-            messageUId: message.messageUId,
-            objectName: message.objectName,
-            senderUserId: message.senderUserId,
-            sentTime: message.sentTime,
-            targetId: message.targetId,
-          };
-          self.needScroll = true;
-          self.chat_data.push(chatMessage);
+          self.addDataForShow(data, message);
         },
         onError: function (errorCode) {
-          console.log('发送文本消息失败', errorCode);
+          console.log('发送消息失败', errorCode);
+          if (errorCode == '23408') {
+            self.errorToast('发送消息失败:您被管理员禁言了！');
+          } else {
+            self.errorToast('发送消息失败:' + errorCode);
+          }
         },
       });
+    },
+    addDataForShow(data, message) {
+      let chatMessage = {
+        content: {
+          content: data,
+        },
+        messageUId: message.messageUId,
+        objectName: message.objectName,
+        senderUserId: message.senderUserId,
+        sentTime: message.sentTime,
+        targetId: message.targetId,
+      };
+      this.needScroll = true;
+      this.chat_data.push(chatMessage);
     },
     updateScroll() {
       let chat_box;
@@ -397,6 +461,7 @@ export default {
             case RongIMLib.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT:
               {
                 console.log('其他设备登录, 本端被踢');
+                self.errorToast('其他设备登录, 本端被踢');
                 self.removeAccessToken();
                 bus.$emit('login', 'show-view');
               }
@@ -428,18 +493,14 @@ export default {
                   if (msgInfo.info_type === 10) {
                     bus.$emit('liveKeyPoints', msgInfo);
                   } else {
-                    let chatMessage = {
-                      content: {
-                        content: msgInfo,
-                      },
-                      messageUId: message.messageUId,
-                      objectName: message.objectName,
-                      senderUserId: message.senderUserId,
-                      sentTime: message.sentTime,
-                      targetId: message.targetId,
-                    };
-                    self.needScroll = true;
-                    self.chat_data.push(chatMessage);
+                    if (
+                      self.ifNeedCheck &&
+                      msgInfo.user.user_id == self.userInfo.user_id
+                    ) {
+                      return;
+                    } else {
+                      self.addDataForShow(msgInfo, message);
+                    }
                   }
                 } else if (msgInfo.info_type == 11) {
                   if (msgInfo.info.status == 3) {
@@ -527,6 +588,7 @@ export default {
               info = errorCode;
               break;
           }
+          self.errorToast(info);
           console.log('连接失败, 失败原因: ', info);
         },
       });
@@ -536,11 +598,13 @@ export default {
       RongIMClient.getInstance().joinChatRoom(this.chat_id, 0, {
         onSuccess: function () {
           console.log('加入聊天室成功');
+          self.successToast('加入聊天室成功');
           self.isEnterRoom = true;
           self.networkForHistoryList();
         },
         onError: function (error) {
           console.log('加入聊天室失败', error);
+          self.errorToast('加入聊天室失败');
         },
       });
     },
@@ -549,11 +613,7 @@ export default {
         this.networkForHistoryList();
       } else {
         this.$refs.loadmore.onTopLoaded();
-        Toast({
-          message: '没有更多的数据',
-          position: 'top',
-          duration: 1500,
-        });
+        self.warningToast('没有更多的数据');
       }
     },
     networkForHistoryList() {
@@ -594,20 +654,10 @@ export default {
           this.$refs.loadmore.onTopLoaded();
         })
         .catch((rej) => {
-          this.$refs.loadmore.onTopLoaded();
-          this.catchError(rej);
-        });
-    },
-    networkForChatInfo() {
-      getChatRoomInfo(this.course_info)
-        .then((res) => {
-          this.chat_token = res.result.data.token;
-          this.chat_id = res.result.data.sdk_id;
-          bus.$emit('getChatInfo_sdk_id', this.chat_id);
-          this.rongYunConnect();
-        })
-        .catch((rej) => {
-          this.catchError(rej);
+          if (this.$refs.loadmore.onTopLoaded) {
+            this.$refs.loadmore.onTopLoaded();
+          }
+          this.$catchError(rej);
         });
     },
     networkForSaveUser() {
@@ -615,24 +665,43 @@ export default {
       this.$store
         .dispatch('AddUser')
         .then((resolve) => {
-          console.log('SET_USER', resolve);
-          console.log(this.userInfo.user_id, this.userInfo, 'aaa');
-          Indicator.close();
+          console.log('SET_USER_chat', resolve);
+          if (
+            this.$store.state.user.user_name &&
+            this.$store.state.user.user_name.length > 0
+          ) {
+            this.userInfo = {
+              user_id: 'junhui#' + this.$store.state.user.user_phone,
+              user_name: this.$store.state.user.user_name,
+              user_photo: this.$store.state.user.user_photo,
+              user_role: 2,
+            };
+          }
         })
         .catch((reject) => {
-          Indicator.close();
-          this.catchError(reject);
+          this.$catchError(reject);
         });
     },
-    catchError(rej) {
-      console.log('catch:', rej);
-      try {
-        if (rej.data.message) {
-          Toast(rej.data.message);
-        }
-      } catch (error) {
-        console.log('error:', error);
-      }
+    errorToast(msg) {
+      Toast({
+        message: msg,
+        position: 'middle',
+        duration: 1500,
+      });
+    },
+    warningToast(msg) {
+      Toast({
+        message: msg,
+        position: 'top',
+        duration: 1500,
+      });
+    },
+    successToast(msg) {
+      Toast({
+        message: msg,
+        position: 'bottom',
+        duration: 1500,
+      });
     },
   },
   beforeDestroy() {
@@ -641,6 +710,7 @@ export default {
       RongIMClient.getInstance().quitChatRoom(this.chat_id, {
         onSuccess: function () {
           console.log('退出聊天室成功');
+          self.successToast('退出聊天室成功');
           self.isEnterRoom = false;
           RongIMClient.getInstance().disconnect();
           self.isConnected = false;
@@ -648,6 +718,7 @@ export default {
         },
         onError: function (error) {
           console.log('退出聊天室失败');
+          self.errorToast('退出聊天室失败');
         },
       });
     } else {
@@ -667,6 +738,14 @@ export default {
   width: 100%;
   height: 100%;
   overflow: auto;
+}
+#live-chat >>> .mint-loadmore-content {
+  height: 100%;
+  width: 100%;
+}
+.load-more {
+  height: 100%;
+  width: 100%;
 }
 #lite-chat-box1 {
   height: calc(100% - 50px);
@@ -713,12 +792,12 @@ hr {
   display: flex;
   font-size: 15px;
   align-items: center;
+  line-height: 32px;
   margin-top: 8px;
   margin-left: 16px;
   flex: 1;
   position: relative;
   padding-left: 10px;
-  padding-top: 10px;
 }
 .tool-header #smile {
   position: relative;

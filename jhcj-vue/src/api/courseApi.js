@@ -67,3 +67,12 @@ export function getChatHistory(params) {
   })
 }
 
+//获取聊天室历史列表
+export function getChatHistoryList(params) {
+  return request({
+    url: "/app/v1/home/playback/listAll",
+    method: "post",
+    data: QS.stringify(params),
+    needToken: true
+  });
+}

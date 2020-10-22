@@ -19,7 +19,7 @@ export default {
   },
   created() {
     this.showContent = jsonEmoji.people;
-    console.log(this.content, '----');
+    console.log(this.content, 'emojiView');
   },
   mounted() {
     this.setBgHeight();

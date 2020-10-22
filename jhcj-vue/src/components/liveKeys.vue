@@ -37,7 +37,7 @@ export default {
     return {
       keysInfo: [],
       currentPage: 1,
-      course_id: '',
+      chat_id: '',
     };
   },
   created() {
@@ -50,13 +50,14 @@ export default {
       this.keysInfo.unshift(element);
     });
     bus.$on('getChatInfo_sdk_id', (msg) => {
-      this.course_id = msg;
-      if (this.course_id && this.course_id.length > 0) {
+      this.chat_token = msg.token;
+      this.chat_id = msg.sdk_id;
+      if (this.chat_id && this.chat_id.length > 0) {
         this.networkForKeyPoints();
       }
-    })
+    });
     if (this.haveLogin()) {
-      if (this.course_id && this.course_id.length > 0) {
+      if (this.chat_id && this.chat_id.length > 0) {
         this.networkForKeyPoints();
       }
     }
@@ -64,8 +65,8 @@ export default {
   methods: {
     networkForKeyPoints() {
       this.keysInfo = [];
-      console.log('keypoints:', this.course_id);
-      getLiveKeyPoints({course_id: this.course_id, page: this.currentPage})
+      console.log('keypoints:', this.chat_id);
+      getLiveKeyPoints({course_id: this.chat_id, page: this.currentPage})
         .then((res) => {
           let data = res.result.data;
           data.forEach((info) => {
@@ -79,7 +80,7 @@ export default {
           });
         })
         .catch((rej) => {
-          this.catchError(rej);
+          this.$catchError(rej);
         });
     },
     haveLogin() {
@@ -93,16 +94,6 @@ export default {
         return true;
       } else {
         return false;
-      }
-    },
-    catchError(rej) {
-      console.log('catch:', rej);
-      try {
-        if (rej.data.message) {
-          Toast(rej.data.message);
-        }
-      } catch (error) {
-        console.log('error:', error);
       }
     },
   },

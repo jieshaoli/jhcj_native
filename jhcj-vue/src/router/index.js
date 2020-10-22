@@ -36,6 +36,16 @@ export default new Router({
       path: '/chatRoom',
       name: 'chatRoom',
       component: chatRoom
+    },
+    {
+      path: '/chatRoomHistory',
+      name: 'chatRoomHistory',
+      component: () => import('../page/chatRoomHistory.vue')
+    },
+    {
+      path: '/chatRoomList',
+      name: 'chatRoomList',
+      component: () => import('../page/chatRoomList.vue')
     }
   ],
   // mode: 'history'

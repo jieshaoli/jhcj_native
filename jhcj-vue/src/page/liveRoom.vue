@@ -84,6 +84,7 @@ import bus from '../common/bus';
 import {
   getCourseMsgUnLogin,
   getCourseMsgLogin,
+  getChatRoomInfo,
   keepTheCourse,
   cancelKeepTheCourse,
 } from '../api/courseApi';
@@ -109,12 +110,37 @@ export default {
       course_id: '',
       isLogined: false,
       isCollected: false,
+      platform: '',
+      playerInit: false,
     };
   },
   components: {
     liveIntro,
     liveKeys,
     liveChat,
+  },
+  created() {
+    var hrefStr = window.location.href;
+    this.checkHref(hrefStr);
+
+    this.haveLogin();
+    bus.$on('login', (msg) => {
+      if (msg == 'success-todo') {
+        if (this.isLogined == false) {
+          this.isLogined = true;
+          this.networkForLiveInfo();
+        }
+      }
+    });
+    this.networkForLiveInfo();
+  },
+  mounted() {
+    let liveContent = document.getElementsByClassName('live-content')[0];
+    let contentBoxes = document.getElementsByClassName('content-box');
+    for (let index = 0; index < contentBoxes.length; index++) {
+      let contentBox = contentBoxes[index];
+      contentBox.style.height = liveContent.offsetHeight + 'px';
+    }
   },
   /**
    *
@@ -160,6 +186,7 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
           'x5-video-player-type': 'h5',
           poster: this.liveDefaultImg,
         });
+        this.playerInit = true;
       }
 
       player.once('ready', () => {
@@ -212,6 +239,31 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
         return false;
       }
     },
+    checkHref(hrefStr) {
+      if (hrefStr.indexOf('id') > -1) {
+        let id = window.location.href.split('id=')[1].split('&')[0];
+        this.course_info = {
+          type: 2,
+          uid: id,
+        };
+        console.log('liveRoom id = ', id);
+      } else {
+        MessageBox.alert('课程出现错误,请输入正确网址', '出错');
+      }
+      // if (hrefStr.indexOf('platform') > -1) {
+      //   this.platform = hrefStr.split('platform=')[1].split('&')[0];
+      //   console.log('platform = ', this.platform);
+      //   if (this.platform) {
+      //     if (this.platform == 'wxf1dae2ba24e9eaae') {
+      //       document.getElementsByTagName('title')[0].innerText = '服务笔记';
+      //     }
+      //   } else {
+      //     document.getElementsByTagName('title')[0].innerText = '君汇财经';
+      //   }
+      // } else {
+      //   document.getElementsByTagName('title')[0].innerText = '君汇财经';
+      // }
+    },
     networkForLiveInfo() {
       if (this.isLogined) {
         getCourseMsgLogin(this.course_info)
@@ -224,10 +276,42 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
               this.flvUrl = courseInfo.http_pull_url;
               this.liveDefaultImg = courseInfo.course_picture;
               this.courseIntroUrl = courseInfo.synopsis_url;
+              if (
+                this.liveDefaultImg.length > 1 &&
+                typeof this.liveDefaultImg == 'string'
+              ) {
+                var bg = document.getElementById('videoBg');
+                bg.style.backgroundImage = 'url(' + this.liveDefaultImg + ')';
+              }
+              if (!this.playerInit) {
+                if (this.hlsUrl.length > 1 && this.flvUrl.length > 1) {
+                  setTimeout(() => {
+                    this.initLivePlayer();
+                  }, 500);
+                }
+              }
+              if (
+                courseInfo.course_status == 1 ||
+                courseInfo.course_status == 2
+              ) {
+                this.networkForChatInfo();
+              } else if (courseInfo.course_status == 3) {
+                MessageBox.confirm(
+                  '是否跳转到聊天历史记录页面',
+                  '课程已结束'
+                ).then(
+                  (certain) => {
+                    window.location.href = 'https://www.baidu.com';
+                  },
+                  (cancel) => {
+                    console.log(cancel, 'action2');
+                  }
+                );
+              }
             }
           })
           .catch((rej) => {
-            this.catchError(rej);
+            this.$catchError(rej);
           });
       } else {
         getCourseMsgUnLogin(this.course_info)
@@ -251,12 +335,28 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
                   this.initLivePlayer();
                 }, 500);
               }
+              if (
+                courseInfo.course_status == 1 ||
+                courseInfo.course_status == 2
+              ) {
+                this.networkForChatInfo();
+              } else if (courseInfo.course_status == 3) {
+              }
             }
           })
           .catch((rej) => {
-            this.catchError(rej);
+            this.$catchError(rej);
           });
       }
+    },
+    networkForChatInfo() {
+      getChatRoomInfo(this.course_info)
+        .then((res) => {
+          bus.$emit('getChatInfo_sdk_id', res.result.data);
+        })
+        .catch((rej) => {
+          this.$catchError(rej);
+        });
     },
     networkForIfKeepCourse: _throttling(function () {
       if (this.isCollected) {
@@ -265,7 +365,7 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
             this.isCollected = false;
           })
           .catch((rej) => {
-            this.catchError(rej);
+            this.$catchError(rej);
           });
       } else {
         keepTheCourse(this.course_info)
@@ -273,54 +373,13 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
             this.isCollected = true;
           })
           .catch((rej) => {
-            this.catchError(rej);
+            this.$catchError(rej);
           });
       }
     }, 1500),
     reload() {
       location.reload();
     },
-    catchError(rej) {
-      console.log('catch:', rej);
-      try {
-        if (rej.data.message) {
-          Toast(rej.data.message);
-        }
-      } catch (error) {
-        console.log('error:', error);
-      }
-    },
-  },
-  created() {
-    var hrefStr = window.location.href;
-    if (hrefStr.indexOf('id') > -1) {
-      let id = window.location.href.split('id=')[1].split('&')[0];
-      this.course_info = {
-        type: 2,
-        uid: id,
-      };
-      console.log('liveRoom id = ', id);
-      this.haveLogin();
-      bus.$on('login', (msg) => {
-        if (msg == 'success-todo') {
-          if (this.isLogined == false) {
-            this.isLogined = true;
-            this.networkForLiveInfo();
-          }
-        }
-      });
-      this.networkForLiveInfo();
-    } else {
-      MessageBox.alert('课程出现错误,请输入正确网址', '出错');
-    }
-  },
-  mounted() {
-    let liveContent = document.getElementsByClassName('live-content')[0];
-    let contentBoxes = document.getElementsByClassName('content-box');
-    for (let index = 0; index < contentBoxes.length; index++) {
-      let contentBox = contentBoxes[index];
-      contentBox.style.height = liveContent.offsetHeight + 'px';
-    }
   },
   beforeDestroy() {
     player.destroy(true);

@@ -35,13 +35,18 @@ const actions = {
     return new Promise((resolve, reject) => {
       getUserBaseInfo()
         .then(res => {
-          commit("SET_USER", res.result.info);
+          commit("SET_USER", res.result);
           resolve(res);
         })
         .catch(rej => {
           reject(rej);
         });
     });
+  },
+  ClearUser({ commit }) {
+    return new Promise((resolve, reject) => {
+      commit("CLEAR_USER");
+    })
   }
 };
 

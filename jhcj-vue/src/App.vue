@@ -10,15 +10,15 @@
 </template>
 
 <script>
-import bus from './common/bus'
-import loginPage from './page/loginPage'
+import bus from './common/bus';
+import loginPage from './page/loginPage';
 
 export default {
   name: 'App',
   data() {
     return {
       show_login: false,
-    }
+    };
   },
   components: {
     loginPage,
@@ -34,7 +34,9 @@ export default {
         .then((resolve) => {
           console.log('SET_USER', resolve);
         })
-        .catch((reject) => {});
+        .catch((reject) => {
+          this.$catchError(reject);
+        });
     },
   },
   created() {
@@ -42,13 +44,16 @@ export default {
       console.log(msg, 'show-login');
       if (msg == 'show-view') {
         this.show_login = true;
-      }else if (msg == 'hide-view' || msg == 'success-todo') {
+      } else if (msg == 'hide-view') {
+        this.show_login = false;
+      } else if (msg == 'success-todo') {
         this.show_login = false;
         this.networkForSaveUser();
       }
     });
+    bus.$on('getUser',)
   },
-}
+};
 </script>
 
 <style scoped>
