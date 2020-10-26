@@ -7,8 +7,6 @@
          :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
          @click.stop="inputBlur">
       <mt-loadmore :top-method="loadTop"
-                   :bottom-method="loadBottom"
-                   :bottom-all-loaded="allLoaded"
                    ref="loadmore"
                    class="load-more">
         <ul>
@@ -646,23 +644,6 @@ export default {
         this.$refs.loadmore.onTopLoaded();
         this.warningToast('没有更多的数据');
       }
-    },
-    loadBottom() {
-      console.log('bottome');
-      var that = this;
-      setTimeout(() => {
-        // 重点在于 添加定时器
-        this.allLoaded = true;
-        this.$refs.loadmore.onBottomLoaded();
-      }, 1000);
-    },
-    allLoaded() {
-      console.log('allLoaded');
-      setTimeout(() => {
-        // 重点在于 添加定时器
-        this.allLoaded = true;
-        this.$refs.loadmore.onBottomLoaded();
-      }, 1000);
     },
     networkForHistoryList() {
       let item = this.chat_data[0];
