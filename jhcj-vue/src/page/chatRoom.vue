@@ -176,6 +176,14 @@ export default {
         document.getElementsByTagName('title')[0].innerText = '君汇财经';
       }
     },
+    isWXBrower() {
+      var ua = navigator.userAgent.toLowerCase();
+      if (ua.match(/MicroMessenger/i) == 'micromessenger') {
+        return true;
+      } else {
+        return false;
+      }
+    },
     networkForGetSignature() {
       let config = {
         headers: {
@@ -217,13 +225,17 @@ export default {
             let courseInfo = res.result.course;
             if (courseInfo) {
               this.courseAllData = courseInfo;
-              if (
-                this.platform == 'wxf1dae2ba24e9eaae' &&
-                window.location.href.indexOf('code') == -1
-              ) {
-                console.log('公众号分享出去');
+              if (this.isWXBrower()) {
+                if (
+                  this.platform == 'wxf1dae2ba24e9eaae' &&
+                  window.location.href.indexOf('code') == -1
+                ) {
+                  console.log('公众号分享出去');
+                } else {
+                  this.networkForGetSignature();
+                }
               } else {
-                this.networkForGetSignature();
+                console.log('非微信中打开');
               }
 
               this.title = courseInfo.course_head;
@@ -260,14 +272,19 @@ export default {
             let courseInfo = res.result.course;
             if (courseInfo) {
               this.courseAllData = courseInfo;
-              if (
-                this.platform == 'wxf1dae2ba24e9eaae' &&
-                window.location.href.indexOf('code') == -1
-              ) {
-                console.log('公众号分享出去');
+              if (this.isWXBrower()) {
+                if (
+                  this.platform == 'wxf1dae2ba24e9eaae' &&
+                  window.location.href.indexOf('code') == -1
+                ) {
+                  console.log('公众号分享出去');
+                } else {
+                  this.networkForGetSignature();
+                }
               } else {
-                this.networkForGetSignature();
+                console.log('非微信中打开');
               }
+
               this.title = courseInfo.course_head;
               if (
                 courseInfo.course_status == 1 ||

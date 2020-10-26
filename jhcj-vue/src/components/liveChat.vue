@@ -1,10 +1,14 @@
 <template>
   <div id="live-chat">
-
+    <largerPicture v-show="imgIsShowing"
+                   :isShowimage_url=isShowimage_url
+                   @imgBgHidechild="imgBgHidechild"></largerPicture>
     <div class="lite-chatbox"
          :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
          @click.stop="inputBlur">
       <mt-loadmore :top-method="loadTop"
+                   :bottom-method="loadBottom"
+                   :bottom-all-loaded="allLoaded"
                    ref="loadmore"
                    class="load-more">
         <ul>
@@ -38,7 +42,8 @@
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content"><img :src="item.content.content.info.image_url" /></span>
+              <span class="content"><img @click="imgBgHide(item.content.content.info.image_url)"
+                     :src="item.content.content.info.image_url" /></span>
             </div>
             <div class="cleft cmsg"
                  v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 3">
@@ -58,7 +63,8 @@
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content">{{ item.content.content.info.content }}<br /><img :src="item.content.content.info.image_url" /></span>
+              <span class="content">{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)"
+                     :src="item.content.content.info.image_url" /></span>
             </div>
             <div class="cleft cmsg"
                  v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 5">
@@ -91,7 +97,8 @@
                   <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
                   <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
                 </div>
-                【答】<img :src="item.content.content.info.image_url" />
+                【答】<img @click="imgBgHide(item.content.content.info.image_url)"
+                     :src="item.content.content.info.image_url" />
               </span>
             </div>
             <div class="cleft cmsg"
@@ -108,7 +115,8 @@
                   <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
                   <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
                 </div>
-                【答】{{ item.content.content.info.content }}<br /><img :src="item.content.content.info.image_url" />
+                【答】{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)"
+                     :src="item.content.content.info.image_url" />
               </span>
             </div>
           </li>
@@ -155,6 +163,7 @@ import { mapGetters } from 'vuex';
 import { Base64 } from 'js-base64';
 import emojiView from './emojiView.vue';
 import { Toast, Loadmore, MessageBox } from 'mint-ui';
+import largerPicture from '../components/largerPicture';
 
 export default {
   name: 'liveChat',
@@ -166,6 +175,7 @@ export default {
   components: {
     emojiView,
     Loadmore,
+    largerPicture,
   },
   data() {
     return {
@@ -179,6 +189,7 @@ export default {
       isConnected: false,
       isEnterRoom: false,
       canLoadMore: true,
+      loading: false,
       needScroll: true,
       scrollH: 0,
       userInfo: {
@@ -189,6 +200,9 @@ export default {
       },
       checkerId: '',
       ifNeedCheck: true,
+      imgIsShowing: false,
+      isShowimage_url: '',
+      imgAction: false,
     };
   },
   mounted() {
@@ -218,7 +232,10 @@ export default {
     });
   },
   updated() {
-    this.updateScroll();
+    if (!this.imgAction) {
+      this.updateScroll();
+    }
+    this.imgAction = false;
   },
   computed: {
     ...mapGetters({
@@ -248,6 +265,15 @@ export default {
     this.initChatRoomSDK();
   },
   methods: {
+    imgBgHidechild(val) {
+      this.imgIsShowing = val;
+      this.imgAction = true;
+    },
+    imgBgHide(val) {
+      this.imgIsShowing = !this.imgIsShowing;
+      this.isShowimage_url = val;
+      this.imgAction = true;
+    },
     showEmoji() {
       this.judgeToLogin();
       this.switchEmoji();
@@ -430,6 +456,7 @@ export default {
       } else {
         chat_box = document.getElementById('lite-chat-box1');
       }
+      console.log('update:', chat_box.scrollTop, chat_box.scrollHeight);
       if (this.needScroll) {
         chat_box.scrollTop = chat_box.scrollHeight;
       } else {
@@ -613,11 +640,29 @@ export default {
     },
     loadTop() {
       if (this.canLoadMore) {
+        this.loading = true;
         this.networkForHistoryList();
       } else {
         this.$refs.loadmore.onTopLoaded();
         this.warningToast('没有更多的数据');
       }
+    },
+    loadBottom() {
+      console.log('bottome');
+      var that = this;
+      setTimeout(() => {
+        // 重点在于 添加定时器
+        this.allLoaded = true;
+        this.$refs.loadmore.onBottomLoaded();
+      }, 1000);
+    },
+    allLoaded() {
+      console.log('allLoaded');
+      setTimeout(() => {
+        // 重点在于 添加定时器
+        this.allLoaded = true;
+        this.$refs.loadmore.onBottomLoaded();
+      }, 1000);
     },
     networkForHistoryList() {
       let item = this.chat_data[0];
@@ -654,10 +699,14 @@ export default {
           } else {
             this.canLoadMore = false;
           }
-          this.$refs.loadmore.onTopLoaded();
+          if (this.loading) {
+            this.loading = false;
+            this.$refs.loadmore.onTopLoaded();
+          }
         })
         .catch((rej) => {
-          if (this.$refs.loadmore.onTopLoaded) {
+          if (this.loading) {
+            this.loading = false;
             this.$refs.loadmore.onTopLoaded();
           }
           this.$catchError(rej);
@@ -746,6 +795,11 @@ export default {
   height: 100%;
   width: 100%;
 } */
+.lite-chatbox {
+  overflow-x: auto;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
 .load-more {
   width: 100%;
 }

@@ -225,20 +225,9 @@ export default {
     getVerifyCode(event) {
       //获取验证码
       if (this.validatePhone()) {
+        this.disabled = true;
         this.validateBtn();
-        if (this.platform == 'app') {
-          loginMsgCode({ mobile_tel: this.phone })
-            .then((res) => {
-              Toast({
-                message: '验证码发送成功',
-                position: 'bottom',
-                duration: 2000,
-              });
-            })
-            .catch((rej) => {
-              this.$catchError(rej);
-            });
-        } else if (this.platform == 'wxf1dae2ba24e9eaae') {
+        if (this.platform == 'wxf1dae2ba24e9eaae') {
           let config = {
             headers: {
               'Content-Type': 'multipart/form-data',
@@ -269,6 +258,18 @@ export default {
             })
             .catch((rej) => {
               console.log('chat/send:rej', rej);
+              this.$catchError(rej);
+            });
+        } else {
+          loginMsgCode({ mobile_tel: this.phone })
+            .then((res) => {
+              Toast({
+                message: '验证码发送成功',
+                position: 'bottom',
+                duration: 2000,
+              });
+            })
+            .catch((rej) => {
               this.$catchError(rej);
             });
         }
@@ -308,28 +309,7 @@ export default {
     },
     networkForLogin() {
       if (this.selected === 'msgCode') {
-        if (this.platform == 'app') {
-          this.$store
-            .dispatch('LoginCode', {
-              userName: this.phone,
-              code: this.verifyCode,
-            })
-            .then((resolve) => {
-              Toast({
-                message: '登录成功',
-                position: 'center',
-                duration: 2000,
-              });
-              bus.$emit('login', 'success-todo');
-              this.phone = '';
-              this.verifyCode = '';
-            })
-            .catch((reject) => {
-              if (reject.data.message) {
-                Toast(reject.data.message);
-              }
-            });
-        } else if (this.platform == 'wxf1dae2ba24e9eaae') {
+        if (this.platform == 'wxf1dae2ba24e9eaae') {
           let config = {
             headers: {
               'Content-Type': 'multipart/form-data',
@@ -379,6 +359,27 @@ export default {
             })
             .catch((rej) => {
               console.log('registerFail', rej);
+            });
+        } else {
+          this.$store
+            .dispatch('LoginCode', {
+              userName: this.phone,
+              code: this.verifyCode,
+            })
+            .then((resolve) => {
+              Toast({
+                message: '登录成功',
+                position: 'center',
+                duration: 2000,
+              });
+              bus.$emit('login', 'success-todo');
+              this.phone = '';
+              this.verifyCode = '';
+            })
+            .catch((reject) => {
+              if (reject.data.message) {
+                Toast(reject.data.message);
+              }
             });
         }
       } else {

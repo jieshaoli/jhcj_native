@@ -17,6 +17,7 @@
         </mt-navbar>
     </div>
     <div class="comtent">
+      <largerPicture v-show="isShow" :isShowimage_url=isShowimage_url @imgBgHidechild="imgBgHidechild" ></largerPicture>
       <ul class="lite-chatbox">
         <li v-for="(item, index) in chat_data"
             :key="index">
@@ -48,7 +49,7 @@
                 :src="item.content.content.user.user_photo" />
             <span class="name">{{ item.content.content.user.user_name }}</span>
             <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
-            <span class="content"><img :src="item.content.content.info.image_url" /></span>
+            <span class="content"><img @click="imgBgHide(item.content.content.info.image_url)" :src="item.content.content.info.image_url" /></span>
           </div>
           <div class="cleft cmsg"
               v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 3">
@@ -68,7 +69,7 @@
                 :src="item.content.content.user.user_photo" />
             <span class="name">{{ item.content.content.user.user_name }}</span>
             <span class="time">{{ item.content.content.info_time | showTime }}</span><br>
-            <span class="content">{{ item.content.content.info.content }}<br /><img :src="item.content.content.info.image_url" /></span>
+            <span class="content">{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)" :src="item.content.content.info.image_url" /></span>
           </div>
           <div class="cleft cmsg"
               v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 5">
@@ -101,7 +102,7 @@
                 <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
                 <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
               </div>
-              【答】<img :src="item.content.content.info.image_url" />
+              【答】<img @click="imgBgHide(item.content.content.info.image_url)" :src="item.content.content.info.image_url" />
             </span>
           </div>
           <div class="cleft cmsg"
@@ -118,7 +119,7 @@
                 <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
                 <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
               </div>
-              【答】{{ item.content.content.info.content }}<br /><img :src="item.content.content.info.image_url" />
+              【答】{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)" :src="item.content.content.info.image_url" />
             </span>
           </div>
         </li>
@@ -137,6 +138,7 @@
 
 <script>
   import { Toast } from 'mint-ui';
+  import largerPicture from '../components/largerPicture';
   import { getChatHistory } from '../api/courseApi';
   import { mapGetters } from 'vuex';
   import { Base64 } from 'js-base64';
@@ -155,10 +157,15 @@
         chat_data: [],
         popupVisible: false,
         dateSlots: [{values: [1]}],
+
+        isShow: false,
+      isShowimage_url: '',
       };
     },
 
-    components: {},
+    components: {
+      largerPicture
+    },
 
     created() {
       let id = window.location.href.split('id=')[1].split('&')[0];
@@ -177,6 +184,13 @@
     },
 
     methods: {
+      imgBgHidechild(val){
+        this.isShow = val;
+      },
+      imgBgHide(val){
+        this.isShow = !this.isShow;
+        this.isShowimage_url = val;
+      },
       onDateChange (picker, values) {
         this.popupVisible = false;
         this.course_info.page = values[0];
@@ -412,4 +426,25 @@ html,body {
 .mint-popup {
   width: 100%;
 }
+
+.img-bg {
+    width:100%;
+    height:100%;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index:9999;
+    background:rgba(0,0,0,.4);
+}
+.img-bg img{
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width:95%;
+    height:auto;
+    max-width:95%;
+  }
 </style>
