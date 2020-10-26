@@ -7,6 +7,12 @@
          :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
          @click.stop="inputBlur">
       <mt-loadmore :top-method="loadTop"
+                   :bottom-method="loadBottom"
+                   :bottom-all-loaded="false"
+                   bottomPullText=""
+                   bottomDropText=""
+                   bottomLoadingText=""
+                   :autoFill="false"
                    ref="loadmore"
                    class="load-more">
         <ul>
@@ -644,6 +650,11 @@ export default {
         this.$refs.loadmore.onTopLoaded();
         this.warningToast('没有更多的数据');
       }
+    },
+    loadBottom() {
+      setTimeout(() => {
+        this.$refs.loadmore.onBottomLoaded();
+      }, 100);
     },
     networkForHistoryList() {
       let item = this.chat_data[0];
