@@ -139,7 +139,7 @@
         </li>
       </ul>
     </div>
-    <div>
+    <div @touchmove.prevent>
       <mt-popup v-model="popupVisible"
                 position="bottom"
                 class="mint-popup">
@@ -448,6 +448,10 @@ body {
 
 .mint-popup {
   width: 100%;
+}
+
+.mint-popup >>> .picker-slot {
+  min-width: 100%;
 }
 
 .img-bg {
