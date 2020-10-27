@@ -9,7 +9,7 @@
                   <div class="listsTeacher flex-h flex-vh-center"><span>{{item.teacher.teacher_name}}·{{item.teacher.teacher_label}}</span><img class="liststeacherIcon" :src="item.teacher.teacher_picture" alt=""></div>
               </div>
           </div>
-          <div class="listsType">{{item.type_id}}</div>
+          <!-- <div class="listsType">{{item.type_id}}</div> -->
       </div>
       <div v-show="!logoFlag" class="nodateLogo flex-h flex-center">
         <img src="../assets/image/logo_empty.png" alt="">
@@ -56,7 +56,12 @@
 
     components: {},
 
-    created() {},
+    created() {
+      if(this.$route.query.platform){
+        this.listobj.platform = this.$route.query.platform;
+      }
+      console.log('queryquery',this.$route.query.platform);
+    },
 
     mounted() {
       this.getDataListFun();
@@ -68,9 +73,7 @@
       getDataListFun() {
         getChatHistoryList(this.listobj)
         .then((res) => {
-          console.log(res);
           if(res.result.count > 0) {
-            console.log('object')
             this.arrLists = res.result.data;
             this.arrLists.forEach(item => {
               item.type_id = '聊天室';
@@ -81,7 +84,7 @@
         })
         .catch((rej) => {
           // this.$refs.loadmore.onTopLoaded();
-          this.$catchError(rej);
+          this.catchError(rej);
         });
       },
       handleClick(uidval) {
@@ -95,7 +98,7 @@
           bus.$emit('login', 'show-view');
           return false;
         }
-      },
+      }
     },
   }
 </script>
@@ -187,7 +190,7 @@
 }
 
 .mainlistBox {
-    padding: 15px 20px;
+    padding: 15px;
     background-color: rgba(255, 255, 255, 1);
     box-shadow: 0px 1px 8px 0px rgba(0, 0, 0, 0.12);
     margin-top: 10px;
@@ -225,11 +228,16 @@
     padding: 2.5px 10px 2.5px 20px;
     border-radius: 20px;
     background: #F6F6F6;
+    white-space:nowrap;    /* 强制不换行 */
+    overflow:hidden;    /* 自动隐藏文字                                                                              */
+    text-overflow: ellipsis;     /* 文字隐藏后添加省略号 */
+    max-width: 200px;
 }
 .listsType {
-    width: auto;
+    width: 40px;
     height: fit-content;
     font-size: 12px;
+    text-align: center;
     color: #E3191A;
     border-radius: 3px;
     border: 1px solid #E3191A;

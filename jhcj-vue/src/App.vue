@@ -2,8 +2,9 @@
   <div id="app">
     <div id="main-page">
       <keep-alive>
-        <router-view></router-view>
+        <router-view v-if="$route.meta.keepAlive"></router-view>
       </keep-alive>
+      <router-view v-if="!$route.meta.keepAlive"></router-view>
     </div>
     <login-page v-show="show_login"></login-page>
   </div>

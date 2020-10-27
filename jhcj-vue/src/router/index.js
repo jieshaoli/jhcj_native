@@ -35,7 +35,10 @@ export default new Router({
     {
       path: '/chatRoom',
       name: 'chatRoom',
-      component: chatRoom
+      component: chatRoom,
+      meta: {
+        keepAlive: true
+      }
     },
     {
       path: '/chatRoomHistory',

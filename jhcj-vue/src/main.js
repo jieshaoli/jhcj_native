@@ -9,8 +9,13 @@ import VConsole from "vconsole";
 import globalFunc from "./plugin/globalFunc.js";
 import "mint-ui/lib/style.css";
 import "./assets/css/litewebchat.css";
+import _setting from "./common/setting.js";
+import jsonData from "../package.json";
 
-let vConsole = new VConsole();
+console.log('version:'+jsonData.version);
+if (_setting.API_PATH == 'http://pp.1yuaninfo.com') {
+  let vConsole = new VConsole();
+}
 
 Vue.use(Mint);
 Vue.use(globalFunc);

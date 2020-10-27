@@ -17,8 +17,13 @@
                    slot="right"
                    @click="collect">
           <img style="width:20px;height:20px"
+               src="../assets/image/list.png"
+               alt="历史列表"
+               v-if="platform == 'wxf1dae2ba24e9eaae'">
+          <img style="width:20px;height:20px"
                :src="isCollected ? require('../assets/image/collected.png') : require('../assets/image/collection.png')"
-               alt="收藏" />
+               alt="收藏"
+               v-else />
         </mt-button>
       </mt-header>
     </div>
@@ -310,22 +315,29 @@ export default {
     },
     collect() {
       if (this.$haveLogin()) {
-        if (this.isCollected) {
-          cancelKeepTheCourse(this.course_info)
-            .then((res) => {
-              this.isCollected = false;
-            })
-            .catch((rej) => {
-              this.$catchError(rej);
-            });
+        if (this.platform == 'wxf1dae2ba24e9eaae') {
+          this.$router.push({
+            name: 'chatRoomList',
+            query: {platform: 'wxf1dae2ba24e9eaae'}
+          });
         } else {
-          keepTheCourse(this.course_info)
-            .then((res) => {
-              this.isCollected = true;
-            })
-            .catch((rej) => {
-              this.$catchError(rej);
-            });
+          if (this.isCollected) {
+            cancelKeepTheCourse(this.course_info)
+              .then((res) => {
+                this.isCollected = false;
+              })
+              .catch((rej) => {
+                this.$catchError(rej);
+              });
+          } else {
+            keepTheCourse(this.course_info)
+              .then((res) => {
+                this.isCollected = true;
+              })
+              .catch((rej) => {
+                this.$catchError(rej);
+              });
+          }
         }
       } else {
         bus.$emit('login', 'show-view');

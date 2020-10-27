@@ -236,15 +236,15 @@ export default {
     });
   },
   updated() {
-    if (!this.imgAction) {
-      this.updateScroll();
-    }
-    this.imgAction = false;
+    this.updateView();
   },
   computed: {
     ...mapGetters({
       user: 'user',
     }),
+  },
+  activated() {
+    this.updateView();
   },
   watch: {
     user: function (val, oldValue) {
@@ -317,6 +317,12 @@ export default {
         let input = document.getElementById('editor');
         input.blur();
       }
+    },
+    updateView() {
+      if (!this.imgAction) {
+        this.updateScroll();
+      }
+      this.imgAction = false;
     },
     setUserInfo() {},
     judgeToLogin() {
