@@ -34,6 +34,8 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
+              <span class="showMark"
+                    v-if="teacher_id == item.content.content.user.user_id ? true : false">老师</span>
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"
@@ -45,6 +47,8 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
+              <span class="showMark"
+                    v-if="teacher_id == item.content.content.user.user_id ? true : false">老师</span>
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"
@@ -57,6 +61,8 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
+              <span class="showMark"
+                    v-if="teacher_id == item.content.content.user.user_id ? true : false">老师</span>
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"
@@ -68,6 +74,8 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
+              <span class="showMark"
+                    v-if="teacher_id == item.content.content.user.user_id ? true : false">老师</span>
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"
@@ -81,15 +89,18 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
+              <span class="showMark"
+                    v-if="teacher_id == item.content.content.user.user_id ? true : false">老师</span>
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content">
+              <span class="content"
+                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">
                 <div class="questionDiv">
                   <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
                   <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
                   <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
                 </div>
-                【答】<span :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">{{ item.content.content.info.content }}</span>
+                【答】{{ item.content.content.info.content }}
               </span>
             </div>
             <div class="cleft cmsg"
@@ -98,9 +109,12 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
+              <span class="showMark"
+                    v-if="teacher_id == item.content.content.user.user_id ? true : false">老师</span>
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content">
+              <span class="content"
+                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">
                 <div class="questionDiv">
                   <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
                   <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
@@ -116,16 +130,18 @@
                    ondragstart="return false;"
                    oncontextmenu="return false;"
                    :src="item.content.content.user.user_photo" />
+              <span class="showMark"
+                    v-if="teacher_id == item.content.content.user.user_id ? true : false">老师</span>
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content">
+              <span class="content"
+                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">
                 <div class="questionDiv">
                   <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
                   <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
                   <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
                 </div>
-                【答】<span :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">{{ item.content.content.info.content }}</span><br /><img
-                     @click="imgBgHide(item.content.content.info.image_url)"
+                【答】{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)"
                      :src="item.content.content.info.image_url" />
               </span>
             </div>

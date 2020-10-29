@@ -205,6 +205,18 @@
   margin: 0 0 2px 48px;
 }
 
+.lite-chatbox .cleft .showMark {
+  color: #555;
+  font-size: 13px;
+  position: absolute;
+  top: 44px;
+  left: 4px;
+}
+
+.lite-chatbox .cleft .head-box {
+  display: inline-block;
+}
+
 /* 左右聊天气泡 */
 .lite-chatbox .cright .content {
   margin: 0 48px 0 0;
@@ -225,17 +237,19 @@
   -webkit-border-radius: 0 20px 20px 20px;
   border-radius: 0 20px 20px 20px;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  background: #FFFFFF;
   -webkit-box-shadow: 5px 5px 15px 0 rgba(102, 102, 102, 0.1);
   box-shadow: 5px 5px 15px 0 rgba(102, 102, 102, 0.1);
 }
 
 .lite-chatbox .cleft .conRed {
-  color: red;
+  color: white;
+  background: -webkit-linear-gradient(70deg, #3FD1E1 0%, #44D7CD 100%);
+  background: linear-gradient(20deg, #3f8fe1cc 0%, #44d7c9 100%);
 }
 
 .lite-chatbox .cleft .conBlack {
   color: #666;
+  background: #FFFFFF;
 }
 
 .lite-chatbox .cright .content:after {
