@@ -29,10 +29,11 @@ export function loginMsgCode(params) {
   });
 }
 // 获取用户的基本信息
-export function getUserBaseInfo() {
+export function getUserBaseInfo(params) {
   return request({
     url: "/app/v1/user/center/base",
     method: "get",
+    params: params,
     needToken: true
   });
   /*info:

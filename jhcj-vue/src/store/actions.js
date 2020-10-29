@@ -31,9 +31,9 @@ const actions = {
       })
     })
   },
-  AddUser({ commit }) {
+  AddUser({ commit }, params) {
     return new Promise((resolve, reject) => {
-      getUserBaseInfo()
+      getUserBaseInfo(params)
         .then(res => {
           commit("SET_USER", res.result);
           resolve(res);

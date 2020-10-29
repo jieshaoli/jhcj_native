@@ -187,6 +187,13 @@ export default {
                           res.data.result.refresh_token
                         );
                         bus.$emit('login', 'success-todo');
+                      } else {
+                        console.log(res.data);
+                        Toast({
+                          title: res.data.message,
+                          position: 'center',
+                          duration: 2000,
+                        });
                       }
                     }
                   })

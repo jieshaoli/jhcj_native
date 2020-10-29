@@ -30,8 +30,13 @@ export default {
     //   let view = document.getElementById('hide_view')
     // },
     networkForSaveUser() {
+      let params = {};
+      if (window.location.href.indexOf('platform') > -1) {
+        let platform = window.location.href.split('platform=')[1].split('&')[0];
+        params = { platform: platform };
+      }
       this.$store
-        .dispatch('AddUser')
+        .dispatch('AddUser', params)
         .then((resolve) => {
           console.log('SET_USER', resolve);
         })
