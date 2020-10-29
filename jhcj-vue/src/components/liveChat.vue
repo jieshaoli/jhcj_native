@@ -36,7 +36,7 @@
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content">{{ item.content.content.info.content }}</span>
+              <span class="content" :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">{{ item.content.content.info.content }}</span>
             </div>
             <div class="cleft cmsg"
                  v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 2">
@@ -46,7 +46,7 @@
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content"><img @click="imgBgHide(item.content.content.info.image_url)"
+              <span class="content" :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'"><img @click="imgBgHide(item.content.content.info.image_url)"
                      :src="item.content.content.info.image_url" /></span>
             </div>
             <div class="cleft cmsg"
@@ -57,7 +57,7 @@
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content">这是播放音频的</span>
+              <span class="content" :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">这是播放音频的</span>
             </div>
             <div class="cleft cmsg"
                  v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 4">
@@ -67,7 +67,7 @@
                    :src="item.content.content.user.user_photo" />
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
-              <span class="content">{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)"
+              <span class="content" :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)"
                      :src="item.content.content.info.image_url" /></span>
             </div>
             <div class="cleft cmsg"
@@ -175,6 +175,9 @@ export default {
     course_info: {
       type: Object,
     },
+    teacher_id: {
+      type: Number,
+    }
   },
   components: {
     emojiView,

@@ -67,7 +67,7 @@
         </mt-tab-container-item>
         <mt-tab-container-item id="chat">
           <div class="content-box">
-            <live-chat v-bind:course_info="course_info"></live-chat>
+            <live-chat v-bind:course_info="course_info" v-bind:teacher_id="teacherId"></live-chat>
           </div>
         </mt-tab-container-item>
       </mt-tab-container>
@@ -112,6 +112,7 @@ export default {
       isCollected: false,
       platform: '',
       playerInit: false,
+      teacherId: -1,
     };
   },
   components: {
@@ -270,6 +271,7 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
           .then((res) => {
             let courseInfo = res.result.course;
             if (courseInfo) {
+              this.teacherId = courseInfo.teacher_id;
               this.title = courseInfo.course_head;
               this.isCollected = courseInfo.is_collection == 1 ? true : false;
               this.hlsUrl = courseInfo.hls_pull_url;
@@ -318,6 +320,7 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
           .then((res) => {
             let courseInfo = res.result.course;
             if (courseInfo) {
+              this.teacherId = courseInfo.teacher_id;
               this.title = courseInfo.course_head;
               this.hlsUrl = courseInfo.hls_pull_url;
               this.flvUrl = courseInfo.http_pull_url;

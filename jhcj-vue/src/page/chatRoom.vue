@@ -28,7 +28,7 @@
       </mt-header>
     </div>
     <div class="content">
-      <live-chat v-bind:course_info="course_info"></live-chat>
+      <live-chat v-bind:course_info="course_info" v-bind:teacher_id="teacherId"></live-chat>
     </div>
   </div>
 </template>
@@ -60,6 +60,7 @@ export default {
       platform: '',
       openId: '',
       signature: '',
+      teacherId: -1,
     };
   },
   components: {
@@ -230,6 +231,7 @@ export default {
             let courseInfo = res.result.course;
             if (courseInfo) {
               this.courseAllData = courseInfo;
+              this.teacherId = courseInfo.teacher_id;
               if (this.isWXBrower()) {
                 if (
                   this.platform == 'wxf1dae2ba24e9eaae' &&
@@ -277,6 +279,7 @@ export default {
             let courseInfo = res.result.course;
             if (courseInfo) {
               this.courseAllData = courseInfo;
+              this.teacherId = courseInfo.teacher_id;
               if (this.isWXBrower()) {
                 if (
                   this.platform == 'wxf1dae2ba24e9eaae' &&
