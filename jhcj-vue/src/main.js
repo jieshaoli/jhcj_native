@@ -11,6 +11,7 @@ import "mint-ui/lib/style.css";
 import "./assets/css/litewebchat.css";
 import _setting from "./common/setting.js";
 import jsonData from "../package.json";
+import 'jquery'
 
 console.log('version:'+jsonData.version);
 if (_setting.API_PATH == 'http://pp.1yuaninfo.com') {
@@ -62,13 +63,13 @@ new Vue({
     window.addEventListener("beforeunload", this.saveState);
     // <script>
     var system = {};
-    var p = navigator.platform;
-    console.log('platform:',p)
+    platformS = navigator.platform;
+    console.log('platform:',platformS)
     var u = navigator.userAgent;
-
-    system.win = p.indexOf("Win") == 0;
-    system.mac = p.indexOf("Mac") == 0;
-    system.x11 = p == "X11" || p.indexOf("Linux") == 0;
+    console.log('userAgent:', u);
+    system.win = platformS.indexOf("Win") == 0;
+    system.mac = platformS.indexOf("Mac") == 0;
+    system.x11 = platformS == "X11" || platformS.indexOf("Linux") == 0;
     if (system.win || system.mac || system.x11) {
       console.log("电脑页面");
     } else {

@@ -3,9 +3,16 @@
     <largerPicture v-show="imgIsShowing"
                    :isShowimage_url=isShowimage_url
                    @imgBgHidechild="imgBgHidechild"></largerPicture>
+    <div v-show="chat_data.length <= 0"
+         style="width: 100%; height: 100%; text-align:center;">
+      <img src="../assets/image/logo_empty.png"
+           alt="默认图"
+           style="width: 80px; margin: 25% 100px;">
+    </div>
     <div class="lite-chatbox"
          :id="if_more_x ? 'lite-chat-box2' : 'lite-chat-box1'"
-         @click.stop="inputBlur">
+         @click.stop="inputBlur"
+         v-show="chat_data.length > 0">
       <mt-loadmore :top-method="loadTop"
                    :bottom-method="loadBottom"
                    :bottom-all-loaded="false"
@@ -304,6 +311,7 @@ export default {
       this.imgAction = true;
     },
     showEmoji() {
+      // console.log($('#editor').is(':focus'), 'focus');
       this.judgeToLogin();
       this.switchEmoji();
     },
@@ -321,7 +329,7 @@ export default {
         this.isShowingEmoji = false;
         image.setAttribute('src', require('../assets/image/smile.png'));
         let input = document.getElementById('editor');
-        // input.focus();
+        // this.cursorKeepEnd(input);
         top = 0;
       } else {
         image.setAttribute('src', require('../assets/image/keyboard.png'));
@@ -331,6 +339,24 @@ export default {
       }
       bg.style.height = bgH + 'px';
       chat_box.style.marginTop = top + 'px';
+    },
+    cursorKeepEnd(element) {
+      console.log(element);
+      element.focus();
+      let textLength = element.innerText.length;
+      if (document.selection) {
+        let sel = document.selection.createRange();
+        sel.moveStart('character', textLength);
+        sel.collapse();
+        sel.select();
+      } else {
+        let sel = window.getSelection();
+        let range = document.createRange();
+        range.selectNodeContents(element);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
     },
     emojiInput(text) {
       this.input_text += text;
@@ -373,6 +399,18 @@ export default {
       }
     },
     textFocus(e) {
+      // if (platformS != 'iPhone') {
+      //   var winHeight = $(window).height();
+      //   $(window).resize(function () {
+      //     console.log('=============');
+      //     var thisHeight = $(this).height();
+      //     console.log(winHeight, '====', thisHeight);
+      //     if (winHeight - thisHeight > 50) {
+      //       $('body').css('transform', 'translateY(' + thisHeight + 'px)');
+      //     }
+      //   });
+      // }
+      console.log('focus');
       if (this.judgeToLogin()) {
         this.isShowingEmoji = true;
         this.switchEmoji();
@@ -381,6 +419,15 @@ export default {
     },
     textBlur() {
       console.log('blur');
+      // if (platformS != 'iPhone') {
+      //   var winHeight = $(window).height();
+      //   $(window).resize(function () {
+      //     console.log('=============');
+      //     var thisHeight = $(this).height();
+      //     console.log(winHeight, '====', thisHeight);
+      //     $('body').css('transform', 'translateY(0)');
+      //   });
+      // }
     },
     haveLogin() {
       let access_token = localStorage.getItem('access_token');
@@ -811,7 +858,13 @@ export default {
 };
 </script>
 
-<style lang="css" scoped>
+<style lang="css">
+.body-move1 {
+  transform: translateY(-305px);
+}
+.body-move2 {
+  transform: translateY(0);
+}
 #live-chat {
   background: #f5f5f5;
   margin: 0;

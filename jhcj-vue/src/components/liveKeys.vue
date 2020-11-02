@@ -1,13 +1,19 @@
 <template>
   <div id="live-keys">
-    <ul>
+    <div v-show="keysInfo.length <= 0"
+         style="width: 100%; height: 100%; text-align:center;">
+      <img src="../assets/image/logo_empty.png"
+           alt="默认图"
+           style="width: 80px; margin: 25% 100px;">
+    </div>
+    <ul v-show="keysInfo.length > 0">
       <li v-for="(info, index) in keysInfo"
           :key="index">
         <div class="cell-bg">
           <span class="time">{{info.ctime | showTime}}</span>
           <div class="point-line">
             <img src="../assets/image/redPoint.png"
-                 alt=""
+                 alt="红点"
                  class="red-points">
             <div class="verticle-line"></div>
           </div>
@@ -66,7 +72,7 @@ export default {
     networkForKeyPoints() {
       this.keysInfo = [];
       console.log('keypoints:', this.chat_id);
-      getLiveKeyPoints({course_id: this.chat_id, page: this.currentPage})
+      getLiveKeyPoints({ course_id: this.chat_id, page: this.currentPage })
         .then((res) => {
           let data = res.result.data;
           data.forEach((info) => {
@@ -85,7 +91,7 @@ export default {
     },
     haveLogin() {
       let access_token = localStorage.getItem('access_token');
-      console.log(access_token,'access_token');
+      console.log(access_token, 'access_token');
       if (
         access_token != null &&
         access_token != undefined &&

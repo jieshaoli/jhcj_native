@@ -38,39 +38,39 @@
         <div id="mse"></div>
       </div>
       <div class="live-choose">
-        <mt-navbar v-model="selected"
-                   class="navbar">
-          <mt-tab-item id="intro">
-            简介
-          </mt-tab-item>
-          <mt-tab-item id="keys">
-            要点
-          </mt-tab-item>
-          <mt-tab-item id="chat">
-            交流
-          </mt-tab-item>
-        </mt-navbar>
+        <div class="middle-navbar">
+          <div class="nav-btn"
+               id="intro"
+               @click="navClick('intro')">
+            <div class="nav-title">简介</div>
+          </div>
+          <div class="nav-btn"
+               id="keys"
+               @click="navClick('keys')">
+            <div class="nav-title">要点</div>
+          </div>
+          <div class="nav-btn"
+               id="chat"
+               @click="navClick('chat')">
+            <div class="nav-title">交流</div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="live-content">
-      <mt-tab-container v-model="selected"
-                        :swipeable=true>
-        <mt-tab-container-item id="intro">
-          <div class="content-box">
-            <live-intro v-bind:liveIntroUrl="courseIntroUrl"></live-intro>
-          </div>
-        </mt-tab-container-item>
-        <mt-tab-container-item id="keys">
-          <div class="content-box">
-            <live-keys v-bind:course_id="course_id"></live-keys>
-          </div>
-        </mt-tab-container-item>
-        <mt-tab-container-item id="chat">
-          <div class="content-box">
-            <live-chat v-bind:course_info="course_info" v-bind:teacher_id="teacherId"></live-chat>
-          </div>
-        </mt-tab-container-item>
-      </mt-tab-container>
+      <div class="live-content">
+        <div class="content-box"
+             v-show="currentShowId == 'intro'">
+          <live-intro v-bind:liveIntroUrl="courseIntroUrl"></live-intro>
+        </div>
+        <div class="content-box"
+             v-show="currentShowId == 'keys'">
+          <live-keys v-bind:course_id="course_id"></live-keys>
+        </div>
+        <div class="content-box"
+             v-show="currentShowId == 'chat'">
+          <live-chat v-bind:course_info="course_info"
+                     v-bind:teacher_id="teacherId"></live-chat>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -113,6 +113,7 @@ export default {
       platform: '',
       playerInit: false,
       teacherId: -1,
+      currentShowId: 'intro',
     };
   },
   components: {
@@ -127,11 +128,16 @@ export default {
     this.haveLogin();
     bus.$on('login', (msg) => {
       if (msg == 'success-todo') {
+        console.log('新登录成功了');
         if (this.isLogined == false) {
           this.isLogined = true;
           this.networkForLiveInfo();
         }
       }
+    });
+    bus.$on('access_token_fail', () => {
+      this.isLogined = false;
+      console.log('令牌已经失效了');
     });
     this.networkForLiveInfo();
   },
@@ -142,6 +148,7 @@ export default {
       let contentBox = contentBoxes[index];
       contentBox.style.height = liveContent.offsetHeight + 'px';
     }
+    $('#intro').addClass('select-nav');
   },
   /**
    *
@@ -225,6 +232,11 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
       } else {
         bus.$emit('login', 'show-view');
       }
+    },
+    navClick(tag) {
+      $('#'+this.currentShowId).removeClass('select-nav');
+      this.currentShowId = tag;
+      $('#'+this.currentShowId).addClass('select-nav');
     },
     haveLogin() {
       let access_token = localStorage.getItem('access_token');
@@ -419,6 +431,7 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
 }
 .live-choose {
   width: 100%;
+  height: 50px;
   top: 251px;
   z-index: 1;
   box-sizing: border-box;
@@ -441,11 +454,36 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
   height: 211px;
   box-sizing: border-box;
 }
-.live-choose .navbar {
+.live-choose .middle-navbar {
   background: white;
   width: 100%;
-  height: 50px;
+  height: 100%;
   border-bottom: 0.5px solid #eee;
+  padding: 0;
+  white-space: nowrap;
+  box-sizing: content-box;
+}
+.middle-navbar .nav-btn {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  height: 50px;
+  width: calc(100% / 3);
+  box-sizing: content-box;
+}
+.nav-btn .nav-title {
+  width: 100%;
+  position: absolute;
+  font-size: 20px;
+  text-align: center;
+  color: #989898;
+  top: 8px;
+}
+.middle-navbar .select-nav {
+  border-bottom: 2px solid red;
+}
+.select-nav .nav-title {
+  color: black;
 }
 /* .navbar /deep/ .is-selected {
   text-decoration: none;
