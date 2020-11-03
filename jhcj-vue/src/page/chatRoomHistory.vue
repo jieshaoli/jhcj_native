@@ -160,6 +160,7 @@
           page: '',
           type: 0,
           uid: '',
+          playback: true
         },
         chat_data: [],
         popupVisible: false,
@@ -235,11 +236,7 @@
             this.dataCount = Math.ceil(res.result.count/20);
           }
           let data = res.result.data;
-
-
-          // console.log('object789789',(Base64.decode(data[3].content.content)));
-          console.log(JSON.parse(Base64.decode(data[3].content.content)).user.user_role);
-
+          // console.log(JSON.parse(Base64.decode(data[3].content)).content.user.user_role);
           this.dateSlots[0].values = [];
           for (let num = 1; num <= this.dataCount; num++) {
             this.dateSlots[0].values.push(num);
