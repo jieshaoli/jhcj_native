@@ -132,18 +132,20 @@
   background-color: lightgrey;
   margin: 3px;
   border-radius: 10px;
+  display: inline-block;
+  margin: 5px 0 0 48px;
 }
 
 .lite-chatbox .questionDiv .questionName {
   margin: 0px 10px;
   font-size: 13px;
-  color: #4b5564;
+  color: #757575;
 }
 
 .lite-chatbox .questionDiv .questionTime {
   margin: 0px 10px;
   font-size: 13px;
-  color: #4b5564;
+  color: #757575;
 }
 
 .lite-chatbox .questionDiv .questionContent {
@@ -153,9 +155,9 @@
   position: relative;
   display: inline-block;
   font-size: 15px;
-  padding: 10px 15px;
+  padding: 5px 10px;
   line-height: 20px;
-  color: #4b5564;
+  color: #757575;
   /*空白消息*/
   min-width: 9px;
   min-height: 18px;

@@ -101,14 +101,12 @@
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"
-                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">
-                <div class="questionDiv">
-                  <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
-                  <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
-                  <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
-                </div>
-                【答】{{ item.content.content.info.content }}
-              </span>
+                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">{{ item.content.content.info.content }}</span>
+              <div class="questionDiv">
+                <span class="questionName">{{ item.content.content.info.qa_name }}</span>
+                <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
+                <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
+              </div>
             </div>
             <div class="cleft cmsg"
                  v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 6">
@@ -121,15 +119,13 @@
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"
-                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">
-                <div class="questionDiv">
-                  <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
-                  <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
-                  <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
-                </div>
-                【答】<img @click="imgBgHide(item.content.content.info.image_url)"
-                     :src="item.content.content.info.image_url" />
-              </span>
+                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'"><img @click="imgBgHide(item.content.content.info.image_url)"
+                     :src="item.content.content.info.image_url" /></span>
+              <div class="questionDiv">
+                <span class="questionName">{{ item.content.content.info.qa_name }}</span>
+                <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
+                <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
+              </div>
             </div>
             <div class="cleft cmsg"
                  v-else-if="item.content.content.user.user_id != userInfo.user_id && item.content.content.info_type == 7">
@@ -142,15 +138,14 @@
               <span class="name">{{ item.content.content.user.user_name }}</span>
               <span class="time">{{ item.sentTime | showTime }}</span><br>
               <span class="content"
-                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">
-                <div class="questionDiv">
-                  <span class="questionName">【问】{{ item.content.content.info.qa_name }}</span>
-                  <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
-                  <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
-                </div>
-                【答】{{ item.content.content.info.content }}<br /><img @click="imgBgHide(item.content.content.info.image_url)"
-                     :src="item.content.content.info.image_url" />
-              </span>
+                    :class="teacher_id == item.content.content.user.user_id ? 'conRed': 'conBlack'">{{ item.content.content.info.content }}<br /><img
+                     @click="imgBgHide(item.content.content.info.image_url)"
+                     :src="item.content.content.info.image_url" /></span>
+              <div class="questionDiv">
+                <span class="questionName">{{ item.content.content.info.qa_name }}</span>
+                <span class="questionTime">{{ item.content.content.info.qa_time | showTime }}</span><br />
+                <span class="questionContent">{{ item.content.content.info.qa_content }}</span>
+              </div>
             </div>
           </li>
         </ul>
@@ -164,6 +159,7 @@
                   type="text"
                   v-model="input_text"
                   :placeholder="input_placeholder"
+                  disabled
                   @focus="textFocus"
                   @blur="textBlur"></textarea>
         <button id="smile"
@@ -191,7 +187,7 @@
 <script>
 import _setting from '../common/setting';
 import bus from '../common/bus';
-import { getChatHistory } from '../api/courseApi';
+import { getChatHistory, getChatRoomInfo } from '../api/courseApi';
 import { mapGetters } from 'vuex';
 import { Base64 } from 'js-base64';
 import emojiView from './emojiView.vue';
@@ -207,6 +203,9 @@ export default {
     teacher_id: {
       type: Number,
     },
+    init_chat: {
+      type: Boolean,
+    },
   },
   components: {
     emojiView,
@@ -215,7 +214,7 @@ export default {
   },
   data() {
     return {
-      input_placeholder: '输入内容...',
+      input_placeholder: '正在加入，请稍等...',
       chat_data: [],
       chat_token: '',
       chat_id: '',
@@ -242,30 +241,36 @@ export default {
     };
   },
   mounted() {
-    let per = window.innerHeight / window.innerWidth;
-    if (per > 1.8) {
-      this.if_more_x = true;
-    } else {
-      this.if_more_x = false;
-    }
-    if (
-      this.$store.state.user.user_name &&
-      this.$store.state.user.user_name.length > 0
-    ) {
-      this.userInfo = {
-        user_id: 'junhui#' + this.$store.state.user.user_phone,
-        user_name: this.$store.state.user.user_name,
-        user_photo: this.$store.state.user.user_photo,
-        user_role: 2,
-      };
-    }
-    this.$nextTick(() => {
-      if (this.haveLogin()) {
-        if (this.userInfo.user_id == '' || this.userInfo.user_id == undefined) {
-          this.networkForSaveUser();
-        }
+    console.log('chat  mounted');
+    if (this.init_chat) {
+      let per = window.innerHeight / window.innerWidth;
+      if (per > 1.8) {
+        this.if_more_x = true;
+      } else {
+        this.if_more_x = false;
       }
-    });
+      if (
+        this.$store.state.user.user_name &&
+        this.$store.state.user.user_name.length > 0
+      ) {
+        this.userInfo = {
+          user_id: 'junhui#' + this.$store.state.user.user_phone,
+          user_name: this.$store.state.user.user_name,
+          user_photo: this.$store.state.user.user_photo,
+          user_role: 2,
+        };
+      }
+      this.$nextTick(() => {
+        if (this.haveLogin()) {
+          if (
+            this.userInfo.user_id == '' ||
+            this.userInfo.user_id == undefined
+          ) {
+            this.networkForSaveUser();
+          }
+        }
+      });
+    }
   },
   updated() {
     this.updateView();
@@ -274,9 +279,6 @@ export default {
     ...mapGetters({
       user: 'user',
     }),
-  },
-  activated() {
-    this.updateView();
   },
   watch: {
     user: function (val, oldValue) {
@@ -289,16 +291,37 @@ export default {
         };
       }
     },
+    isEnterRoom: function (val, oldValue) {
+      if (val == true) {
+        this.input_placeholder = '请输入内容...';
+        $('#editor').removeAttr('disabled');
+      } else {
+        this.input_placeholder = '正在加入，请稍等...';
+        $('#editor').attr('disabled', true);
+      }
+    },
+    init_chat: function (val, oldValue) {
+      if (val == true) {
+
+      }
+      console.log(val, 'init_chat', oldValue);
+    }
   },
   created() {
-    bus.$on('getChatInfo_sdk_id', (msg) => {
-      this.chat_token = msg.token;
-      this.chat_id = msg.sdk_id;
-      this.ifNeedCheck = msg.is_examine_room == 1 ? true : false;
-      this.checkerId = msg.send_examine_id;
-      this.rongYunConnect();
-    });
-    this.initChatRoomSDK();
+    console.log('chat  created');
+    // bus.$on('getChatInfo_sdk_id', (msg) => {
+    //   this.chat_token = msg.token;
+    //   this.chat_id = msg.sdk_id;
+    //   this.ifNeedCheck = msg.is_examine_room == 1 ? true : false;
+    //   this.checkerId = msg.send_examine_id;
+    //   this.rongYunConnect();
+    // });
+    if (this.init_chat) {
+      this.networkForHistoryList();
+      this.networkForChatInfo();
+      this.initChatRoomSDK();
+      console.log('init chat')
+    }
   },
   methods: {
     imgBgHidechild(val) {
@@ -710,9 +733,8 @@ export default {
       RongIMClient.getInstance().joinChatRoom(this.chat_id, 0, {
         onSuccess: function () {
           console.log('加入聊天室成功');
-          self.successToast('加入聊天室成功');
+          // self.successToast('加入聊天室成功');
           self.isEnterRoom = true;
-          self.networkForHistoryList();
         },
         onError: function (error) {
           console.log('加入聊天室失败', error);
@@ -734,15 +756,30 @@ export default {
         this.$refs.loadmore.onBottomLoaded();
       }, 100);
     },
+    networkForChatInfo() {
+      getChatRoomInfo(this.course_info)
+        .then((res) => {
+          // bus.$emit('getChatInfo_sdk_id', res.result.data);
+          let msg = res.result.data;
+          this.chat_token = msg.token;
+          this.chat_id = msg.sdk_id;
+          this.ifNeedCheck = msg.is_examine_room == 1 ? true : false;
+          this.checkerId = msg.send_examine_id;
+          this.rongYunConnect();
+        })
+        .catch((rej) => {
+          this.$catchError(rej);
+        });
+    },
     networkForHistoryList() {
       let item = this.chat_data[0];
       let para;
       if (item) {
         para = { uid: this.course_info.uid, messageUId: item.messageUId };
-        this.needScroll = false;
+        this.needScroll = true;
       } else {
         para = { uid: this.course_info.uid };
-        this.needScroll = true;
+        this.needScroll = false;
       }
       getChatHistory(para)
         .then((res) => {

@@ -68,7 +68,8 @@
         <div class="content-box"
              v-show="currentShowId == 'chat'">
           <live-chat v-bind:course_info="course_info"
-                     v-bind:teacher_id="teacherId"></live-chat>
+                     v-bind:teacher_id="teacherId"
+                     v-bind:init_chat="true"></live-chat>
         </div>
       </div>
     </div>
@@ -84,7 +85,7 @@ import bus from '../common/bus';
 import {
   getCourseMsgUnLogin,
   getCourseMsgLogin,
-  getChatRoomInfo,
+  // getChatRoomInfo,
   keepTheCourse,
   cancelKeepTheCourse,
 } from '../api/courseApi';
@@ -308,19 +309,19 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
                 courseInfo.course_status == 1 ||
                 courseInfo.course_status == 2
               ) {
-                this.networkForChatInfo();
+                // this.networkForChatInfo();
               } else if (courseInfo.course_status == 3) {
-                MessageBox.confirm(
-                  '是否跳转到聊天历史记录页面',
-                  '课程已结束'
-                ).then(
-                  (certain) => {
-                    window.location.href = 'https://www.baidu.com';
-                  },
-                  (cancel) => {
-                    console.log(cancel, 'action2');
-                  }
-                );
+                // MessageBox.confirm(
+                //   '是否跳转到聊天历史记录页面',
+                //   '课程已结束'
+                // ).then(
+                //   (certain) => {
+                //     window.location.href = 'https://www.baidu.com';
+                //   },
+                //   (cancel) => {
+                //     console.log(cancel, 'action2');
+                //   }
+                // );
               }
             }
           })
@@ -354,7 +355,7 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
                 courseInfo.course_status == 1 ||
                 courseInfo.course_status == 2
               ) {
-                this.networkForChatInfo();
+                // this.networkForChatInfo();
               } else if (courseInfo.course_status == 3) {
               }
             }
@@ -364,15 +365,15 @@ userAgent: mozilla/5.0 (iphone; cpu iphone os 13_5_1 like mac os x) applewebkit/
           });
       }
     },
-    networkForChatInfo() {
-      getChatRoomInfo(this.course_info)
-        .then((res) => {
-          bus.$emit('getChatInfo_sdk_id', res.result.data);
-        })
-        .catch((rej) => {
-          this.$catchError(rej);
-        });
-    },
+    // networkForChatInfo() {
+    //   getChatRoomInfo(this.course_info)
+    //     .then((res) => {
+    //       bus.$emit('getChatInfo_sdk_id', res.result.data);
+    //     })
+    //     .catch((rej) => {
+    //       this.$catchError(rej);
+    //     });
+    // },
     networkForIfKeepCourse: _throttling(function () {
       if (this.isCollected) {
         cancelKeepTheCourse(this.course_info)

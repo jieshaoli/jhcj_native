@@ -1,10 +1,9 @@
 <template>
   <div id="chat-room">
     <div class="fixed-div">
-      <mt-header :title=title
-                 class="header">
-        <!-- <router-link to="/" -->
-        <!-- slot="left"> -->
+      <!-- <mt-header :title=title
+                 class="header"
+                 v-if="platform == '' || platform == 'app'">
         <mt-button class="nav-left-btn"
                    slot="left"
                    @click="reload">
@@ -12,7 +11,6 @@
                src="../assets/image/reload.png"
                alt="刷新">
         </mt-button>
-        <!-- </router-link> -->
         <mt-button class="nav-right-btn"
                    slot="right"
                    @click="collect">
@@ -25,20 +23,58 @@
                alt="收藏"
                v-else />
         </mt-button>
-      </mt-header>
+      </mt-header> -->
+      <div class="header">
+        <!-- v-else -->
+        <div class="left-btn"
+             @click="reload"><img style="width:20px;height:20px"
+               src="../assets/image/reload.png"
+               alt="刷新"></div>
+        <div class="nav-btn-group">
+          <div class="nav-btn"
+               id="living"
+               @click="navClick('living')">
+            <div class="nav-title">直播</div>
+          </div>
+          <div class="nav-btn"
+               id="vip"
+               @click="navClick('vip')">
+            <div class="nav-title">VIP</div>
+          </div>
+        </div>
+        <div class="right-btn"
+             @click="collect">
+          <img style="width:20px;height:20px"
+               src="../assets/image/list.png"
+               alt="历史列表">
+        </div>
+      </div>
     </div>
+    <!-- <div class="content"
+         v-if="platform == '' || platform == 'app'">
+      <live-chat v-bind:course_info="course_info"
+                 v-bind:teacher_id="teacherId"></live-chat>
+    </div> -->
     <div class="content">
-      <live-chat v-bind:course_info="course_info" v-bind:teacher_id="teacherId"></live-chat>
+      <!-- v-else -->
+      <free-text-living v-bind:course_info="course_info"
+                        v-bind:teacher_id="teacherId"
+                        v-show="currentShowId == 'living'"></free-text-living>
+      <live-chat v-bind:course_info="course_info"
+                 v-bind:teacher_id="teacherId"
+                 v-bind:init_chat="isPayer"
+                 v-show="currentShowId == 'vip'"></live-chat>
     </div>
   </div>
 </template>
 
 <script>
 import liveChat from '../components/liveChat';
+import freeTextLiving from '../components/freeTextLiving';
 import {
   getCourseMsgUnLogin,
   getCourseMsgLogin,
-  getChatRoomInfo,
+  // getChatRoomInfo,
   keepTheCourse,
   cancelKeepTheCourse,
 } from '../api/courseApi';
@@ -61,12 +97,20 @@ export default {
       openId: '',
       signature: '',
       teacherId: -1,
+      currentShowId: 'living',
+      isPayer: false,
     };
   },
   components: {
     liveChat,
+    freeTextLiving,
   },
-  mounted() {},
+  mounted() {
+    // if (this.platform == '' || this.platform == 'app') {
+    // } else if (this.platform == 'wxf1dae2ba24e9eaae') {
+      $('#living').addClass('select-nav');
+    // }
+  },
   created() {
     var hrefStr = window.location.href;
     this.checkHref(hrefStr);
@@ -137,6 +181,24 @@ export default {
         console.log('wx error:', res);
       });
     },
+    navClick(tag) {
+      if (tag == 'vip') {
+        if (!this.judgeToLogin()) {
+          return;
+        }
+      }
+      $('#' + this.currentShowId).removeClass('select-nav');
+      this.currentShowId = tag;
+      $('#' + this.currentShowId).addClass('select-nav');
+    },
+    judgeToLogin() {
+      if (this.haveLogin()) {
+        return true;
+      } else {
+        bus.$emit('login', 'show-view');
+        return false;
+      }
+    },
     haveLogin() {
       let access_token = localStorage.getItem('access_token');
       if (
@@ -179,6 +241,7 @@ export default {
         }
         console.log('platform = ', this.platform);
       } else {
+        this.isPayer = true;
         document.getElementsByTagName('title')[0].innerText = '君汇财经';
       }
     },
@@ -251,7 +314,7 @@ export default {
                 courseInfo.course_status == 1 ||
                 courseInfo.course_status == 2
               ) {
-                this.networkForChatInfo();
+                // this.networkForChatInfo();
               } else if (courseInfo.course_status == 3) {
                 MessageBox.confirm(
                   '是否跳转到聊天历史记录页面',
@@ -307,21 +370,12 @@ export default {
           });
       }
     },
-    networkForChatInfo() {
-      getChatRoomInfo(this.course_info)
-        .then((res) => {
-          bus.$emit('getChatInfo_sdk_id', res.result.data);
-        })
-        .catch((rej) => {
-          this.$catchError(rej);
-        });
-    },
     collect() {
       if (this.$haveLogin()) {
         if (this.platform == 'wxf1dae2ba24e9eaae') {
           this.$router.push({
             name: 'chatRoomList',
-            query: {platform: 'wxf1dae2ba24e9eaae'}
+            query: { platform: 'wxf1dae2ba24e9eaae' },
           });
         } else {
           if (this.isCollected) {
@@ -361,10 +415,50 @@ export default {
 .fixed-div {
   position: fixed;
   width: 100%;
+  height: 40px;
 }
 .header {
   background: white;
+  width: 100%;
+  height: 100%;
   color: #323232;
+  position: relative;
+}
+.header .left-btn {
+  display: inline-block;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+.header .right-btn {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.header .nav-btn-group {
+  display: inline-flex;
+  position: absolute;
+  width: calc(100% - 160px);
+  height: 100%;
+  left: 80px;
+  justify-content: center;
+}
+.nav-btn-group .nav-btn {
+  width: 50%;
+  text-align: center;
+  font-size: 20px;
+  vertical-align: middle;
+}
+.nav-btn .nav-title {
+  line-height: 40px;
+  color: gray;
+}
+.nav-btn-group .select-nav {
+  font-size: 22px;
+}
+.select-nav .nav-title {
+  color: black;
 }
 .content {
   position: fixed;

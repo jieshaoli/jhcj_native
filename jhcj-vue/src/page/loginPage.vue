@@ -82,7 +82,7 @@ export default {
       errors: {}, //验证提示信息
       todo: '',
       selected: 'msgCode',
-      platform: 'app',
+      platform: '',
       openId: '',
     };
   },
@@ -267,7 +267,7 @@ export default {
               console.log('chat/send:rej', rej);
               this.$catchError(rej);
             });
-        } else {
+        } else if (this.platform == '' || this.platform == 'app') {
           loginMsgCode({ mobile_tel: this.phone })
             .then((res) => {
               Toast({
@@ -367,7 +367,7 @@ export default {
             .catch((rej) => {
               console.log('registerFail', rej);
             });
-        } else {
+        } else if (this.platform == '' || this.platform == 'app') {
           this.$store
             .dispatch('LoginCode', {
               userName: this.phone,
